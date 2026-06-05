@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { Colors, BorderRadius, FontSize, Spacing } from "../lib/constants";
 
 type Props = {
-  endsAt: string; // ISO date string
+  endsAt: string;
   variant?: "card" | "large";
 };
 
@@ -28,7 +28,6 @@ export function CountdownTimer({ endsAt, variant = "card" }: Props) {
 
   const expired = t.ms === 0;
   const urgent = !expired && t.totalSec <= 30 * 60;
-
   const pad = (n: number) => n.toString().padStart(2, "0");
 
   if (variant === "large") {
@@ -43,32 +42,34 @@ export function CountdownTimer({ endsAt, variant = "card" }: Props) {
     );
   }
 
-  // Card variant
-  const badgeStyle = expired
-    ? styles.badgeExpired
-    : urgent
-    ? styles.badgeUrgent
-    : styles.badgeNormal;
+  /* Card badge — sits on top of photo */
+  if (expired) {
+    return (
+      <View style={[styles.badge, styles.badgeExpired]}>
+        <Text style={styles.badgeTextDark}>Süresi doldu</Text>
+      </View>
+    );
+  }
 
-  const badgeTextStyle = expired
-    ? styles.badgeTextExpired
-    : urgent
-    ? styles.badgeTextUrgent
-    : styles.badgeTextNormal;
+  if (urgent) {
+    return (
+      <View style={[styles.badge, styles.badgeUrgent]}>
+        <Text style={styles.badgeTextLight}>
+          {t.h > 0
+            ? `${t.h}sa ${pad(t.m)}dk ${pad(t.s)}sn`
+            : `${pad(t.m)}:${pad(t.s)}`}
+        </Text>
+      </View>
+    );
+  }
 
   return (
-    <View style={[styles.badge, badgeStyle]}>
-      {expired ? (
-        <Text style={[styles.badgeText, badgeTextStyle]}>Suresi doldu</Text>
-      ) : t.h > 0 ? (
-        <Text style={[styles.badgeText, badgeTextStyle]}>
-          {t.h}sa {pad(t.m)}dk {pad(t.s)}sn
-        </Text>
-      ) : (
-        <Text style={[styles.badgeText, badgeTextStyle]}>
-          {pad(t.m)}:{pad(t.s)}
-        </Text>
-      )}
+    <View style={[styles.badge, styles.badgeNormal]}>
+      <Text style={styles.badgeTextDark}>
+        {t.h > 0
+          ? `${t.h}sa ${pad(t.m)}dk ${pad(t.s)}sn`
+          : `${pad(t.m)}:${pad(t.s)}`}
+      </Text>
     </View>
   );
 }
@@ -92,7 +93,7 @@ function TimeBlock({
       <Text
         style={[
           styles.timeBlockValue,
-          { color: highlight ? Colors.magenta : Colors.text },
+          { color: highlight ? Colors.action : Colors.text },
         ]}
       >
         {value.toString().padStart(2, "0")}
@@ -107,27 +108,26 @@ function Sep() {
 }
 
 const styles = StyleSheet.create({
-  // Large variant
   largeContainer: {
     flexDirection: "row",
     alignItems: "center",
     gap: Spacing.sm,
   },
   timeBlock: {
-    minWidth: 48,
+    minWidth: 52,
     alignItems: "center",
     borderRadius: BorderRadius.md,
     borderWidth: 1,
     paddingHorizontal: Spacing.sm,
-    paddingVertical: 6,
+    paddingVertical: 8,
   },
   timeBlockDefault: {
     borderColor: Colors.border,
     backgroundColor: Colors.surface,
   },
   timeBlockHighlight: {
-    borderColor: `${Colors.magenta}4D`, // ~30% opacity
-    backgroundColor: `${Colors.magenta}1A`, // ~10% opacity
+    borderColor: Colors.actionSoft,
+    backgroundColor: Colors.actionSoft,
   },
   timeBlockValue: {
     fontSize: FontSize.xxl,
@@ -148,35 +148,33 @@ const styles = StyleSheet.create({
     color: Colors.textMute,
   },
 
-  // Card variant badge
+  /* Card badge — white glass on photos */
   badge: {
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: BorderRadius.full,
-    paddingHorizontal: 10,
+    borderRadius: BorderRadius.sm,
+    paddingHorizontal: 8,
     paddingVertical: 4,
   },
   badgeNormal: {
-    backgroundColor: "rgba(255,255,255,0.95)",
+    backgroundColor: "rgba(255,255,255,0.9)",
   },
   badgeUrgent: {
-    backgroundColor: Colors.magenta,
+    backgroundColor: Colors.action,
   },
   badgeExpired: {
     backgroundColor: Colors.surface2,
   },
-  badgeText: {
+  badgeTextLight: {
     fontSize: FontSize.xs,
-    fontWeight: "600",
+    fontWeight: "700",
     fontVariant: ["tabular-nums"],
-  },
-  badgeTextNormal: {
-    color: Colors.text,
-  },
-  badgeTextUrgent: {
     color: Colors.white,
   },
-  badgeTextExpired: {
-    color: Colors.textMute,
+  badgeTextDark: {
+    fontSize: FontSize.xs,
+    fontWeight: "700",
+    fontVariant: ["tabular-nums"],
+    color: Colors.text,
   },
 });

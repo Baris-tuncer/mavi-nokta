@@ -1,19 +1,19 @@
 import { useState } from "react";
 import {
   View,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
   Alert,
   StyleSheet,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../providers/AuthProvider";
 import { signOut } from "../../services/auth";
 import { Text } from "../../components/ui/Text";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
-import { Colors, Spacing, BorderRadius, FontSize } from "../../lib/constants";
+import { Colors, Spacing, BorderRadius, FontSize, Shadow } from "../../lib/constants";
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -21,17 +21,17 @@ export default function ProfileScreen() {
   const [signingOut, setSigningOut] = useState(false);
 
   const handleSignOut = async () => {
-    Alert.alert("Cikis Yap", "Hesabinizdan cikmak istediginize emin misiniz?", [
-      { text: "Iptal", style: "cancel" },
+    Alert.alert("Çıkış Yap", "Hesabınızdan çıkmak istediğinize emin misiniz?", [
+      { text: "İptal", style: "cancel" },
       {
-        text: "Cikis Yap",
+        text: "Çıkış Yap",
         style: "destructive",
         onPress: async () => {
           setSigningOut(true);
           try {
             await signOut();
           } catch {
-            Alert.alert("Hata", "Cikis yapilamadi. Tekrar deneyin.");
+            Alert.alert("Hata", "Çıkış yapılamadı. Tekrar deneyin.");
           } finally {
             setSigningOut(false);
           }
@@ -44,37 +44,37 @@ export default function ProfileScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centered}>
-          <Text variant="muted">Yukleniyor...</Text>
+          <Text variant="muted">Yükleniyor...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
-  // --- Logged Out ---
+  // --- Guest ---
   if (!user) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={["top"]}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.guestContainer}>
             <View style={styles.guestIconCircle}>
               <Text style={styles.guestIconText}>?</Text>
             </View>
             <Text variant="heading" style={styles.guestTitle}>
-              Hosgeldiniz
+              Hoşgeldiniz
             </Text>
             <Text variant="caption" style={styles.guestSubtitle}>
-              Firsatlardan yararlanmak icin giris yapin veya kayit olun
+              Yakınındaki en iyi fırsatları keşfet
             </Text>
 
             <View style={styles.guestButtons}>
               <Button
-                title="Musteri Girisi"
+                title="Müşteri Girişi"
                 variant="primary"
                 onPress={() => router.push("/(auth)/customer-login")}
                 style={styles.guestButton}
               />
               <Button
-                title="Isletme Girisi"
+                title="İşletme Girişi"
                 variant="outline"
                 onPress={() => router.push("/(auth)/business-login")}
                 style={styles.guestButton}
@@ -82,14 +82,27 @@ export default function ProfileScreen() {
             </View>
 
             <TouchableOpacity
-              onPress={() => router.push("/(auth)/customer-login")}
+              onPress={() => router.push("/(auth)/customer-register")}
               style={styles.registerLink}
             >
               <Text style={styles.registerText}>
-                Hesabiniz yok mu?{" "}
-                <Text style={styles.registerTextBold}>Kayit Ol</Text>
+                Hesabın yok mu?{" "}
+                <Text style={styles.registerTextBold}>Kayıt Ol</Text>
               </Text>
             </TouchableOpacity>
+
+            <View style={styles.demoDivider}>
+              <View style={styles.demoDividerLine} />
+              <Text style={styles.demoDividerText}>veya</Text>
+              <View style={styles.demoDividerLine} />
+            </View>
+
+            <Button
+              title="Demo İşletme Paneli"
+              variant="ghost"
+              onPress={() => router.push("/(business)/dashboard")}
+              style={styles.guestButton}
+            />
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -101,19 +114,19 @@ export default function ProfileScreen() {
     .substring(0, 2)
     .toUpperCase();
 
-  const roleBadgeVariant = profile?.role === "BUSINESS" ? "amber" : "blue";
+  const roleBadgeVariant = profile?.role === "BUSINESS" ? "amber" : "accent";
   const roleLabel =
-    profile?.role === "BUSINESS" ? "Isletme" : "Musteri";
+    profile?.role === "BUSINESS" ? "İşletme" : "Müşteri";
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.profileHeader}>
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>{initials}</Text>
           </View>
           <Text variant="heading" style={styles.profileName}>
-            {profile?.name || "Kullanici"}
+            {profile?.name || "Kullanıcı"}
           </Text>
           <Text variant="caption" style={styles.profileEmail}>
             {profile?.email || user.email}
@@ -124,7 +137,7 @@ export default function ProfileScreen() {
         <View style={styles.actions}>
           {profile?.role === "BUSINESS" && (
             <Button
-              title="Isletme Paneli"
+              title="İşletme Paneli"
               variant="secondary"
               onPress={() => router.push("/(business)/dashboard")}
               style={styles.actionButton}
@@ -132,7 +145,7 @@ export default function ProfileScreen() {
           )}
 
           <Button
-            title="Cikis Yap"
+            title="Çıkış Yap"
             variant="danger"
             loading={signingOut}
             onPress={handleSignOut}
@@ -161,7 +174,6 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.xxl,
   },
 
-  // --- Guest State ---
   guestContainer: {
     flex: 1,
     justifyContent: "center",
@@ -169,18 +181,19 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.xxl,
   },
   guestIconCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: Colors.surface2,
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: Colors.accentSoft,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: Spacing.lg,
+    ...Shadow.glow,
   },
   guestIconText: {
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: "700",
-    color: Colors.textMute,
+    color: Colors.accentLight,
   },
   guestTitle: {
     marginBottom: Spacing.xs,
@@ -206,11 +219,27 @@ const styles = StyleSheet.create({
     fontSize: FontSize.sm,
   },
   registerTextBold: {
-    color: Colors.blue,
+    color: Colors.accentLight,
     fontWeight: "700",
   },
+  demoDivider: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.sm,
+    gap: Spacing.sm,
+  },
+  demoDividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: Colors.border,
+  },
+  demoDividerText: {
+    fontSize: FontSize.xs,
+    color: Colors.textMute,
+  },
 
-  // --- Logged In State ---
   profileHeader: {
     alignItems: "center",
     paddingVertical: Spacing.xl,
@@ -219,10 +248,11 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: Colors.blue,
+    backgroundColor: Colors.accent,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: Spacing.md,
+    ...Shadow.glow,
   },
   avatarText: {
     fontSize: 28,

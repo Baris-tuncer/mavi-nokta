@@ -2,7 +2,7 @@ import { View, StyleSheet } from "react-native";
 import { Text } from "./Text";
 import { Colors, BorderRadius, Spacing, FontSize } from "../../lib/constants";
 
-type Variant = "blue" | "magenta" | "eco" | "amber" | "neutral";
+type Variant = "accent" | "action" | "eco" | "amber" | "neutral";
 
 type Props = {
   label: string;
@@ -11,10 +11,10 @@ type Props = {
 };
 
 const variantColors: Record<Variant, { bg: string; text: string }> = {
-  blue: { bg: Colors.blueSoft, text: Colors.blue },
-  magenta: { bg: "#FCE8EF", text: Colors.magenta },
-  eco: { bg: "#E8F8EE", text: Colors.eco },
-  amber: { bg: "#FFF4E0", text: Colors.amber },
+  accent: { bg: Colors.accentSoft, text: Colors.accentLight },
+  action: { bg: Colors.actionSoft, text: Colors.action },
+  eco: { bg: Colors.ecoSoft, text: Colors.eco },
+  amber: { bg: Colors.amberSoft, text: Colors.amber },
   neutral: { bg: Colors.surface2, text: Colors.textSoft },
 };
 
@@ -40,12 +40,12 @@ const styles = StyleSheet.create({
   badge: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 4,
-    paddingHorizontal: Spacing.sm,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
     borderRadius: BorderRadius.full,
   },
   text: {
     fontSize: FontSize.xs,
-    fontWeight: "600",
+    fontWeight: "700",
   },
 });

@@ -11,7 +11,7 @@ type Props = {
 };
 
 const categories: { key: CategoryOption; label: string; emoji: string }[] = [
-  { key: "ALL", label: "Tumunu", emoji: "\uD83D\uDD25" },
+  { key: "ALL", label: "Tümü", emoji: "\uD83D\uDD25" },
   ...Object.entries(categoryMeta).map(([key, meta]) => ({
     key: key as MockCategory,
     label: meta.label,
@@ -58,12 +58,12 @@ const styles = StyleSheet.create({
   },
   pill: {
     paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
+    paddingVertical: 10,
     borderRadius: BorderRadius.full,
     marginRight: Spacing.xs,
   },
   pillActive: {
-    backgroundColor: Colors.text,
+    backgroundColor: Colors.accent,
   },
   pillInactive: {
     backgroundColor: Colors.surface,
@@ -78,6 +78,6 @@ const styles = StyleSheet.create({
     color: Colors.white,
   },
   pillTextInactive: {
-    color: Colors.text,
+    color: Colors.textSoft,
   },
 });

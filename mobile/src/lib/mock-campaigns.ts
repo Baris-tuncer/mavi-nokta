@@ -1,9 +1,22 @@
 export type MockCategory =
   | "CAFE"
   | "BAKERY"
+  | "PASTANE"
   | "RESTAURANT"
+  | "FASTFOOD"
+  | "TATLI"
+  | "BUFE"
+  | "KASAP"
+  | "MANAV"
   | "MARKET"
-  | "PUB";
+  | "PUB"
+  | "PETSHOP"
+  | "PHARMACY"
+  | "BEAUTY"
+  | "FLORIST"
+  | "GYM"
+  | "VET"
+  | "OTHER";
 
 export type MockCampaign = {
   id: string;
@@ -49,7 +62,7 @@ export const mockCampaigns: MockCampaign[] = [
     oldPrice: 100,
     newPrice: 50,
     startsAt: minutes(-30),
-    endsAt: minutes(95),
+    endsAt: minutes(180),
     totalStock: 50,
     remainingStock: 12,
     isSurprisePackage: false,
@@ -101,7 +114,7 @@ export const mockCampaigns: MockCampaign[] = [
     oldPrice: 450,
     newPrice: 270,
     startsAt: minutes(-60),
-    endsAt: minutes(45),
+    endsAt: minutes(120),
     totalStock: 30,
     remainingStock: 6,
     isSurprisePackage: false,
@@ -179,7 +192,7 @@ export const mockCampaigns: MockCampaign[] = [
     oldPrice: 150,
     newPrice: 99,
     startsAt: minutes(-90),
-    endsAt: minutes(20),
+    endsAt: minutes(90),
     totalStock: 100,
     remainingStock: 7,
     isSurprisePackage: false,
@@ -247,6 +260,110 @@ export const mockCampaigns: MockCampaign[] = [
       logoUrl: u("photo-1521017432531-fbd92d768814", 96),
     },
   },
+  {
+    id: "c9",
+    slug: "moda-kahvesi-latte",
+    slogan: "Moda sahilinde iced latte yarı fiyatına, sadece bu saat!",
+    title: "Iced Latte",
+    description: "Soğuk süt + double shot espresso, buz gibi.",
+    imageUrl: u("photo-1461023058943-07fcbe16d735"),
+    oldPrice: 120,
+    newPrice: 55,
+    startsAt: minutes(-20),
+    endsAt: minutes(100),
+    totalStock: 30,
+    remainingStock: 8,
+    isSurprisePackage: false,
+    business: {
+      name: "Moda Kahvesi",
+      slug: "moda-kahvesi",
+      category: "CAFE",
+      city: "İstanbul",
+      district: "Kadıköy",
+      address: "Moda Cd. No:12, Kadıköy",
+      latitude: 40.9828,
+      longitude: 29.0258,
+      logoUrl: u("photo-1445116572660-236099ec97a0", 96),
+    },
+  },
+  {
+    id: "c10",
+    slug: "karga-bar-happy-hour",
+    slogan: "Karga'da craft bira festivali — 2 al 1 öde!",
+    title: "Craft Bira 2 Al 1 Öde",
+    description: "Tüm yerel mikro-bira markalarında geçerli.",
+    imageUrl: u("photo-1571613316887-6f8d5cbf7ef7"),
+    oldPrice: 160,
+    newPrice: 80,
+    startsAt: minutes(-10),
+    endsAt: minutes(110),
+    totalStock: null,
+    remainingStock: null,
+    isSurprisePackage: false,
+    business: {
+      name: "Karga Bar",
+      slug: "karga-bar",
+      category: "PUB",
+      city: "İstanbul",
+      district: "Kadıköy",
+      address: "Kadife Sok. No:16, Kadıköy",
+      latitude: 40.987,
+      longitude: 29.0285,
+      logoUrl: u("photo-1514933651103-005eec06c04b", 96),
+    },
+  },
+  {
+    id: "c11",
+    slug: "patili-dost-mama",
+    slogan: "Premium kedi maması — son 5 paket kaldı!",
+    title: "Premium Kedi Maması 1kg",
+    description: "Tavuklu tahılsız premium mama, 1 kg paket.",
+    imageUrl: u("photo-1548199973-03cce0bbc87b"),
+    oldPrice: 250,
+    newPrice: 149,
+    startsAt: minutes(-60),
+    endsAt: minutes(90),
+    totalStock: 10,
+    remainingStock: 5,
+    isSurprisePackage: true,
+    business: {
+      name: "Patili Dost Pet Shop",
+      slug: "patili-dost",
+      category: "PETSHOP",
+      city: "İstanbul",
+      district: "Kadıköy",
+      address: "Bahariye Cd. No:42, Kadıköy",
+      latitude: 40.989,
+      longitude: 29.027,
+      logoUrl: u("photo-1587300003388-59208cc962cb", 96),
+    },
+  },
+  {
+    id: "c12",
+    slug: "moda-eczane-vitamin",
+    slogan: "Vitamin C + Zinc paketi — kışa hazırlık fırsatı",
+    title: "Vitamin C + Zinc Seti",
+    description: "60 tablet Vitamin C + 30 tablet Zinc, birlikte.",
+    imageUrl: u("photo-1584308666544-451135f7ff45"),
+    oldPrice: 320,
+    newPrice: 199,
+    startsAt: minutes(-45),
+    endsAt: minutes(200),
+    totalStock: 25,
+    remainingStock: 14,
+    isSurprisePackage: false,
+    business: {
+      name: "Moda Eczanesi",
+      slug: "moda-eczanesi",
+      category: "PHARMACY",
+      city: "İstanbul",
+      district: "Kadıköy",
+      address: "Moda Cd. No:88, Kadıköy",
+      latitude: 40.9835,
+      longitude: 29.024,
+      logoUrl: u("photo-1576602976047-174e57a47881", 96),
+    },
+  },
 ];
 
 export const categoryMeta: Record<
@@ -255,9 +372,22 @@ export const categoryMeta: Record<
 > = {
   CAFE: { label: "Cafe", emoji: "\u2615" },
   BAKERY: { label: "F\u0131r\u0131n", emoji: "\ud83e\udd56" },
+  PASTANE: { label: "Pastane", emoji: "\ud83c\udf82" },
   RESTAURANT: { label: "Restoran", emoji: "\ud83c\udf5d" },
+  FASTFOOD: { label: "Fast Food", emoji: "\ud83c\udf54" },
+  TATLI: { label: "Tatlıcı", emoji: "\ud83c\udf69" },
+  BUFE: { label: "Büfe", emoji: "\ud83c\udf2d" },
+  KASAP: { label: "Kasap", emoji: "\ud83e\udd69" },
+  MANAV: { label: "Manav", emoji: "\ud83e\udd66" },
   MARKET: { label: "Market", emoji: "\ud83d\uded2" },
   PUB: { label: "Pub", emoji: "\ud83c\udf7a" },
+  PETSHOP: { label: "Pet Shop", emoji: "\ud83d\udc3e" },
+  PHARMACY: { label: "Eczane", emoji: "\ud83d\udc8a" },
+  BEAUTY: { label: "Güzellik", emoji: "\ud83d\udc87" },
+  FLORIST: { label: "Çiçekçi", emoji: "\ud83c\udf3b" },
+  GYM: { label: "Spor Salonu", emoji: "\ud83c\udfcb\ufe0f" },
+  VET: { label: "Veteriner", emoji: "\ud83d\udc15" },
+  OTHER: { label: "Diğer", emoji: "\ud83c\udfea" },
 };
 
 export type CityKey =
@@ -275,6 +405,7 @@ export const cities: { key: CityKey; label: string; districts: string[] }[] = [
       "T\u00fcm il\u00e7eler",
       "Be\u015fikta\u015f",
       "Kad\u0131k\u00f6y",
+      "Moda",
       "\u015ei\u015fli",
       "Cihangir",
       "Karak\u00f6y",

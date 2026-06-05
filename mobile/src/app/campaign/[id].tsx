@@ -1,14 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
   Dimensions,
+  Pressable,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Image } from "expo-image";
-import { ChevronLeft } from "lucide-react-native";
+import { ChevronLeft, Info } from "lucide-react-native";
 import { Text } from "../../components/ui/Text";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
@@ -20,23 +21,28 @@ import {
   Spacing,
   FontSize,
   BorderRadius,
+  Shadow,
 } from "../../lib/constants";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
-const IMAGE_HEIGHT = 300;
+const IMAGE_HEIGHT = 320;
+
+const CONCEPT_TEXT =
+  "Bu görsel, Mavi Nokta kalite standartları gereği sunulacak deneyimi yansıtmak amacıyla konsept olarak seçilmiştir.";
 
 export default function CampaignDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const [tooltipVisible, setTooltipVisible] = useState(false);
 
   const campaign = mockCampaigns.find((c) => c.id === id);
 
   if (!campaign) {
     return (
       <View style={styles.notFound}>
-        <Text variant="heading">Kampanya bulunamadi</Text>
+        <Text variant="heading">Kampanya bulunamadı</Text>
         <Button
-          title="Geri Don"
+          title="Geri Dön"
           variant="ghost"
           onPress={() => router.back()}
           style={styles.backBtn}
@@ -60,7 +66,11 @@ export default function CampaignDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView bounces={false}>
+      {/* Dismiss tooltip on scroll/tap anywhere */}
+      <ScrollView
+        bounces={false}
+        onScrollBeginDrag={() => setTooltipVisible(false)}
+      >
         {/* Full-bleed Image */}
         <View style={styles.imageContainer}>
           <Image
@@ -70,7 +80,7 @@ export default function CampaignDetailScreen() {
             transition={200}
           />
 
-          {/* Back Button Overlay */}
+          {/* Back Button — white glass */}
           <TouchableOpacity
             style={styles.backOverlay}
             onPress={() => router.back()}
@@ -78,6 +88,31 @@ export default function CampaignDetailScreen() {
           >
             <ChevronLeft size={24} color={Colors.text} />
           </TouchableOpacity>
+
+          {/* Concept image info icon — frosted glass circle */}
+          <TouchableOpacity
+            style={styles.infoIconWrap}
+            onPress={() => setTooltipVisible((v) => !v)}
+            activeOpacity={0.7}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          >
+            <View style={styles.infoIcon}>
+              <Info size={13} color={Colors.textSoft} strokeWidth={2.5} />
+            </View>
+          </TouchableOpacity>
+
+          {/* Glassmorphism tooltip */}
+          {tooltipVisible && (
+            <Pressable
+              style={styles.tooltipBackdrop}
+              onPress={() => setTooltipVisible(false)}
+            >
+              <View style={styles.tooltip}>
+                <Text style={styles.tooltipText}>{CONCEPT_TEXT}</Text>
+              </View>
+              <View style={styles.tooltipArrow} />
+            </Pressable>
+          )}
         </View>
 
         {/* Content */}
@@ -121,7 +156,7 @@ export default function CampaignDetailScreen() {
             <Text style={styles.newPrice}>
               {formatPrice(campaign.newPrice)}
             </Text>
-            <Badge label={`%${discount} indirim`} variant="magenta" />
+            <Badge label={`%${discount} indirim`} variant="action" />
           </View>
 
           {/* Stock Progress Bar */}
@@ -130,7 +165,7 @@ export default function CampaignDetailScreen() {
               <View style={styles.stockHeader}>
                 <Text variant="label">Stok</Text>
                 <Text variant="muted">
-                  {campaign.remainingStock} / {campaign.totalStock} kaldi
+                  {campaign.remainingStock} / {campaign.totalStock} kaldı
                 </Text>
               </View>
               <View style={styles.stockBarBg}>
@@ -140,7 +175,7 @@ export default function CampaignDetailScreen() {
                     {
                       width: `${Math.max(stockProgress * 100, 2)}%`,
                       backgroundColor:
-                        stockProgress < 0.2 ? Colors.magenta : Colors.blue,
+                        stockProgress < 0.2 ? Colors.action : Colors.accent,
                     },
                   ]}
                 />
@@ -158,9 +193,15 @@ export default function CampaignDetailScreen() {
             </View>
           ) : null}
 
+          {/* Concept image footnote — elegant, hierarchically subordinate */}
+          <View style={styles.conceptFootnoteRow}>
+            <Info size={10} color={Colors.textMute} strokeWidth={2} />
+            <Text style={styles.conceptFootnoteText}>Konsept görseli</Text>
+          </View>
+
           {/* CTA Button */}
           <Button
-            title="Bu firsati yakala"
+            title="Bu fırsatı yakala"
             variant="primary"
             onPress={() => {
               // TODO: Implement claim flow
@@ -199,22 +240,68 @@ const styles = StyleSheet.create({
   },
   backOverlay: {
     position: "absolute",
-    top: 52,
+    top: 56,
     left: Spacing.md,
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.9)",
+    backgroundColor: "rgba(255,255,255,0.85)",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    ...Shadow.sm,
   },
+
+  /* ── Concept image info icon ── */
+  infoIconWrap: {
+    position: "absolute",
+    right: Spacing.md,
+    bottom: Spacing.md,
+  },
+  infoIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "rgba(255,255,255,0.7)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  /* ── Glassmorphism tooltip ── */
+  tooltipBackdrop: {
+    position: "absolute",
+    right: Spacing.md,
+    bottom: Spacing.md + 36,
+    alignItems: "flex-end",
+  },
+  tooltip: {
+    maxWidth: SCREEN_WIDTH * 0.72,
+    backgroundColor: "rgba(255,255,255,0.92)",
+    borderRadius: BorderRadius.md,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    ...Shadow.md,
+  },
+  tooltipText: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: Colors.textSoft,
+    letterSpacing: 0.1,
+  },
+  tooltipArrow: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 6,
+    borderRightWidth: 6,
+    borderTopWidth: 6,
+    borderLeftColor: "transparent",
+    borderRightColor: "transparent",
+    borderTopColor: "rgba(255,255,255,0.92)",
+    alignSelf: "flex-end",
+    marginRight: 8,
+  },
+
   content: {
-    padding: Spacing.md,
+    padding: Spacing.lg,
     paddingBottom: Spacing.xxl * 2,
   },
   businessRow: {
@@ -267,7 +354,7 @@ const styles = StyleSheet.create({
   newPrice: {
     fontSize: FontSize.xxl,
     fontWeight: "800",
-    color: Colors.blue,
+    color: Colors.accent,
   },
   stockSection: {
     marginBottom: Spacing.lg,
@@ -299,6 +386,20 @@ const styles = StyleSheet.create({
     color: Colors.textSoft,
     lineHeight: 22,
   },
+
+  /* ── Concept image footnote ── */
+  conceptFootnoteRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    marginBottom: Spacing.lg,
+  },
+  conceptFootnoteText: {
+    fontSize: 11,
+    color: Colors.textMute,
+    letterSpacing: 0.15,
+  },
+
   ctaButton: {
     width: "100%",
   },

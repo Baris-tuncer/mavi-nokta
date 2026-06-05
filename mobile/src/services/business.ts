@@ -6,6 +6,7 @@ import type { BusinessCategory } from "../lib/database.types";
 export type CreateBusinessInput = {
   businessName: string;
   category: BusinessCategory;
+  customCategory?: string;
   cityKey: string;
   cityLabel: string;
   district: string;
@@ -31,6 +32,10 @@ export async function createBusiness(input: CreateBusinessInput) {
       name: input.businessName,
       slug,
       category: input.category,
+      description:
+        input.category === "OTHER" && input.customCategory
+          ? input.customCategory
+          : null,
       city: input.cityLabel,
       district: input.district,
       address: input.address,

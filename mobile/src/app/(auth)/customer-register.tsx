@@ -40,7 +40,7 @@ export default function CustomerRegisterScreen() {
       return;
     }
     if (!password || password.length < 6) {
-      setError("Sifre en az 6 karakter olmali.");
+      setError("Şifre en az 6 karakter olmalı.");
       return;
     }
 
@@ -60,8 +60,8 @@ export default function CustomerRegisterScreen() {
       // If no session, email confirmation is required
       if (!data.session) {
         Alert.alert(
-          "E-posta Onay",
-          "Kayit basarili! Lutfen e-postani kontrol edip hesabini onayla.",
+          "E-posta Onayı",
+          "Kayıt başarılı! Lütfen e-postanı kontrol edip hesabını onayla.",
           [
             {
               text: "Tamam",
@@ -81,7 +81,7 @@ export default function CustomerRegisterScreen() {
       await refreshProfile();
       router.replace("/(tabs)");
     } catch (e: any) {
-      setError(e.message ?? "Bir hata olustu.");
+      setError(e.message ?? "Bir hata oluştu.");
     } finally {
       setPending(false);
     }
@@ -97,16 +97,16 @@ export default function CustomerRegisterScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
-          <Text variant="title">Kayit Ol</Text>
+          <Text variant="title">Kayıt Ol</Text>
           <Text variant="caption" style={styles.subtitle}>
-            30 saniye surer. Kart yok, abonelik yok.
+            30 saniye sürer. Kart yok, abonelik yok.
           </Text>
         </View>
 
         <View style={styles.form}>
           <Input
             label="Ad Soyad"
-            placeholder="Ahmet Yilmaz"
+            placeholder="Ahmet Yılmaz"
             value={name}
             onChangeText={setName}
             autoCapitalize="words"
@@ -124,7 +124,7 @@ export default function CustomerRegisterScreen() {
           />
 
           <Input
-            label="Sifre"
+            label="Şifre"
             placeholder="******"
             value={password}
             onChangeText={setPassword}
@@ -143,8 +143,8 @@ export default function CustomerRegisterScreen() {
           />
 
           <Input
-            label="Sehir"
-            placeholder="Istanbul"
+            label="Şehir"
+            placeholder="İstanbul"
             value={city}
             onChangeText={setCity}
             autoCapitalize="words"
@@ -155,7 +155,7 @@ export default function CustomerRegisterScreen() {
           ) : null}
 
           <Button
-            title="Kayit Ol"
+            title="Kayıt Ol"
             onPress={handleSubmit}
             loading={pending}
             style={styles.submitButton}
@@ -165,8 +165,8 @@ export default function CustomerRegisterScreen() {
         <View style={styles.links}>
           <Link href="/(auth)/customer-login" asChild>
             <Text style={styles.linkText}>
-              Zaten hesabin var mi?{" "}
-              <Text style={styles.linkBold}>Giris yap</Text>
+              Zaten hesabın var mı?{" "}
+              <Text style={styles.linkBold}>Giriş yap</Text>
             </Text>
           </Link>
         </View>
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   errorText: {
-    color: Colors.magenta,
+    color: Colors.action,
     fontSize: 13,
     marginBottom: Spacing.md,
   },
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   linkBold: {
-    color: Colors.blue,
+    color: Colors.accentLight,
     fontWeight: "600",
   },
 });

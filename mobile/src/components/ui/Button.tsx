@@ -5,7 +5,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Text } from "./Text";
-import { Colors, BorderRadius, Spacing, FontSize } from "../../lib/constants";
+import { Colors, BorderRadius, Spacing, FontSize, Shadow } from "../../lib/constants";
 
 type Variant = "primary" | "secondary" | "outline" | "ghost" | "danger";
 
@@ -42,7 +42,7 @@ export function Button({
       {loading ? (
         <ActivityIndicator
           size="small"
-          color={variant === "primary" ? Colors.white : Colors.blue}
+          color={variant === "outline" || variant === "ghost" ? Colors.accent : Colors.white}
         />
       ) : (
         <>
@@ -67,44 +67,46 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 14,
+    paddingVertical: 16,
     paddingHorizontal: Spacing.lg,
-    borderRadius: BorderRadius.full,
-    minHeight: 48,
+    borderRadius: BorderRadius.xl,
+    minHeight: 52,
   },
   disabled: {
-    opacity: 0.5,
+    opacity: 0.4,
   },
   text: {
     fontSize: FontSize.base,
-    fontWeight: "600",
+    fontWeight: "700",
+    letterSpacing: 0.3,
   },
 });
 
 const variantStyles: Record<Variant, any> = {
   primary: {
-    backgroundColor: Colors.text,
+    backgroundColor: Colors.accent,
+    ...Shadow.glow,
   },
   secondary: {
-    backgroundColor: Colors.blue,
+    backgroundColor: Colors.surface2,
   },
   outline: {
     backgroundColor: "transparent",
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.borderStrong,
   },
   ghost: {
     backgroundColor: "transparent",
   },
   danger: {
-    backgroundColor: Colors.magenta,
+    backgroundColor: Colors.action,
   },
 };
 
 const textVariantStyles: Record<Variant, any> = {
   primary: { color: Colors.white },
-  secondary: { color: Colors.white },
+  secondary: { color: Colors.text },
   outline: { color: Colors.text },
-  ghost: { color: Colors.blue },
+  ghost: { color: Colors.accent },
   danger: { color: Colors.white },
 };

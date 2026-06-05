@@ -27,7 +27,7 @@ export default function BusinessLoginScreen() {
     setError("");
 
     if (!email.trim() || !password) {
-      setError("E-posta ve sifre gerekli.");
+      setError("E-posta ve şifre gerekli.");
       return;
     }
 
@@ -41,7 +41,7 @@ export default function BusinessLoginScreen() {
       await refreshProfile();
       router.replace("/(business)/dashboard");
     } catch (e: any) {
-      setError(e.message ?? "Bir hata olustu.");
+      setError(e.message ?? "Bir hata oluştu.");
     } finally {
       setPending(false);
     }
@@ -57,9 +57,9 @@ export default function BusinessLoginScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
-          <Text variant="title">Isletme Girisi</Text>
+          <Text variant="title">İşletme Girişi</Text>
           <Text variant="caption" style={styles.subtitle}>
-            Kampanyalarini yonet, musterini al.
+            Kampanyalarını yönet, müşterini al.
           </Text>
         </View>
 
@@ -75,7 +75,7 @@ export default function BusinessLoginScreen() {
           />
 
           <Input
-            label="Sifre"
+            label="Şifre"
             placeholder="******"
             value={password}
             onChangeText={setPassword}
@@ -88,7 +88,7 @@ export default function BusinessLoginScreen() {
           ) : null}
 
           <Button
-            title="Giris Yap"
+            title="Giriş Yap"
             onPress={handleSubmit}
             loading={pending}
             style={styles.submitButton}
@@ -98,12 +98,12 @@ export default function BusinessLoginScreen() {
         <View style={styles.links}>
           <Link href="/(auth)/business-register" asChild>
             <Text style={styles.linkText}>
-              Isletme ac — <Text style={styles.linkBold}>ucretsiz</Text>
+              İşletme aç — <Text style={styles.linkBold}>ücretsiz</Text>
             </Text>
           </Link>
 
           <Link href="/(auth)/customer-login" asChild>
-            <Text style={styles.linkTextSecondary}>Musteri misin?</Text>
+            <Text style={styles.linkTextSecondary}>Müşteri misin?</Text>
           </Link>
         </View>
       </ScrollView>
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   errorText: {
-    color: Colors.magenta,
+    color: Colors.action,
     fontSize: 13,
     marginBottom: Spacing.md,
   },
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   linkBold: {
-    color: Colors.blue,
+    color: Colors.accentLight,
     fontWeight: "600",
   },
   linkTextSecondary: {

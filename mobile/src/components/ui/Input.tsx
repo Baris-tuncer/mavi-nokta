@@ -66,24 +66,24 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
     borderRadius: BorderRadius.md,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.surface,
     marginTop: Spacing.xs,
   },
   focused: {
-    borderColor: Colors.blue,
-    shadowColor: Colors.blue,
+    borderColor: Colors.accent,
+    shadowColor: Colors.accent,
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
   },
   errorBorder: {
-    borderColor: Colors.magenta,
+    borderColor: Colors.action,
   },
   input: {
     flex: 1,
     fontSize: FontSize.base,
     color: Colors.text,
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: Spacing.md,
   },
   icon: {
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: FontSize.xs,
-    color: Colors.magenta,
+    color: Colors.action,
     marginTop: Spacing.xs,
   },
   hint: {

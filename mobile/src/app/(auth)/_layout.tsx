@@ -9,24 +9,25 @@ export default function AuthLayout() {
         headerStyle: { backgroundColor: Colors.bg },
         headerTintColor: Colors.text,
         headerShadowVisible: false,
+        headerTitleStyle: { fontWeight: "600" },
         contentStyle: { backgroundColor: Colors.bg },
       }}
     >
       <Stack.Screen
         name="customer-login"
-        options={{ title: "Musteri Girisi" }}
+        options={{ title: "Müşteri Girişi" }}
       />
       <Stack.Screen
         name="business-login"
-        options={{ title: "Isletme Girisi" }}
+        options={{ title: "İşletme Girişi" }}
       />
       <Stack.Screen
         name="customer-register"
-        options={{ title: "Musteri Kayit" }}
+        options={{ title: "Müşteri Kayıt" }}
       />
       <Stack.Screen
         name="business-register"
-        options={{ title: "Isletme Kayit" }}
+        options={{ title: "İşletme Kayıt" }}
       />
     </Stack>
   );

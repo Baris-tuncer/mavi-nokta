@@ -7,13 +7,15 @@ export default function BusinessLayout() {
       screenOptions={{
         headerStyle: { backgroundColor: Colors.bg },
         headerTintColor: Colors.text,
+        headerTitleStyle: { fontWeight: "600" },
         headerShadowVisible: false,
         contentStyle: { backgroundColor: Colors.bg },
+        animation: "slide_from_right",
       }}
     >
       <Stack.Screen
         name="dashboard"
-        options={{ title: "Isletme Paneli" }}
+        options={{ title: "İşletme Paneli" }}
       />
       <Stack.Screen
         name="new-campaign"

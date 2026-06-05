@@ -7,11 +7,23 @@
 export type UserRole = "CUSTOMER" | "BUSINESS";
 
 export type BusinessCategory =
-  | "MARKET"
   | "CAFE"
-  | "RESTAURANT"
   | "BAKERY"
+  | "PASTANE"
+  | "RESTAURANT"
+  | "FASTFOOD"
+  | "TATLI"
+  | "BUFE"
+  | "KASAP"
+  | "MANAV"
+  | "MARKET"
   | "PUB"
+  | "PETSHOP"
+  | "PHARMACY"
+  | "BEAUTY"
+  | "FLORIST"
+  | "GYM"
+  | "VET"
   | "OTHER";
 
 export type CampaignStatus =

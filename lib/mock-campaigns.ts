@@ -6,7 +6,9 @@ export type MockCategory =
   | "BAKERY"
   | "RESTAURANT"
   | "MARKET"
-  | "PUB";
+  | "PUB"
+  | "PHARMACY"
+  | "PETSHOP";
 
 export type MockCampaign = {
   id: string;
@@ -259,6 +261,8 @@ export const categoryMeta: Record<MockCategory, { label: string; emoji: string }
   RESTAURANT: { label: "Restoran", emoji: "🍝" },
   MARKET: { label: "Market", emoji: "🛒" },
   PUB: { label: "Pub", emoji: "🍺" },
+  PHARMACY: { label: "Eczane", emoji: "💊" },
+  PETSHOP: { label: "Pet Shop", emoji: "🐾" },
 };
 
 // =====================================================

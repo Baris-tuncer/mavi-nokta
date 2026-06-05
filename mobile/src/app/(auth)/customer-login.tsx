@@ -5,7 +5,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
-  Alert,
 } from "react-native";
 import { useRouter, Link } from "expo-router";
 import { Input } from "../../components/ui/Input";
@@ -28,7 +27,7 @@ export default function CustomerLoginScreen() {
     setError("");
 
     if (!email.trim() || !password) {
-      setError("E-posta ve sifre gerekli.");
+      setError("E-posta ve şifre gerekli.");
       return;
     }
 
@@ -42,7 +41,7 @@ export default function CustomerLoginScreen() {
       await refreshProfile();
       router.replace("/(tabs)");
     } catch (e: any) {
-      setError(e.message ?? "Bir hata olustu.");
+      setError(e.message ?? "Bir hata oluştu.");
     } finally {
       setPending(false);
     }
@@ -58,9 +57,9 @@ export default function CustomerLoginScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
-          <Text variant="title">Musteri Girisi</Text>
+          <Text variant="title">Müşteri Girişi</Text>
           <Text variant="caption" style={styles.subtitle}>
-            Mahallendeki anlik firsatlari yakalamaya devam et.
+            Mahallendeki anlık fırsatları yakalamaya devam et.
           </Text>
         </View>
 
@@ -76,7 +75,7 @@ export default function CustomerLoginScreen() {
           />
 
           <Input
-            label="Sifre"
+            label="Şifre"
             placeholder="******"
             value={password}
             onChangeText={setPassword}
@@ -89,7 +88,7 @@ export default function CustomerLoginScreen() {
           ) : null}
 
           <Button
-            title="Giris Yap"
+            title="Giriş Yap"
             onPress={handleSubmit}
             loading={pending}
             style={styles.submitButton}
@@ -99,12 +98,12 @@ export default function CustomerLoginScreen() {
         <View style={styles.links}>
           <Link href="/(auth)/customer-register" asChild>
             <Text style={styles.linkText}>
-              Hesabin yok mu? <Text style={styles.linkBold}>Kayit ol</Text>
+              Hesabın yok mu? <Text style={styles.linkBold}>Kayıt ol</Text>
             </Text>
           </Link>
 
           <Link href="/(auth)/business-login" asChild>
-            <Text style={styles.linkTextSecondary}>Isletme misin?</Text>
+            <Text style={styles.linkTextSecondary}>İşletme misin?</Text>
           </Link>
         </View>
       </ScrollView>
@@ -132,7 +131,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   errorText: {
-    color: Colors.magenta,
+    color: Colors.action,
     fontSize: 13,
     marginBottom: Spacing.md,
   },
@@ -148,7 +147,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   linkBold: {
-    color: Colors.blue,
+    color: Colors.accentLight,
     fontWeight: "600",
   },
   linkTextSecondary: {

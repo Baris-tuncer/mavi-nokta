@@ -4,9 +4,9 @@ import {
   RefreshControl,
   View,
   ActivityIndicator,
-  SafeAreaView,
   StyleSheet,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Gift, Leaf } from "lucide-react-native";
 import { Text } from "../../components/ui/Text";
@@ -52,7 +52,7 @@ export default function SurpriseScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <FlatList
         data={campaigns}
         keyExtractor={(item) => item.id}
@@ -63,11 +63,11 @@ export default function SurpriseScreen() {
               <Leaf size={20} color={Colors.white} style={styles.leafIcon} />
             </View>
             <Text variant="heading" style={styles.bannerTitle}>
-              Surpriz Paketler
+              Sürpriz Paketler
             </Text>
             <Text style={styles.bannerSubtitle}>
-              Isletmelerin gun sonunda kalan urunlerinden olusturulan surpriz
-              paketler. Hem tasarruf et, hem sifir atiga destek ol!
+              İşletmelerin gün sonunda kalan ürünlerinden oluşturulan sürpriz
+              paketler. Hem tasarruf et, hem sıfır atığa destek ol!
             </Text>
           </View>
         }
@@ -90,10 +90,10 @@ export default function SurpriseScreen() {
           <View style={styles.empty}>
             <Gift size={48} color={Colors.textMute} />
             <Text variant="muted" style={styles.emptyText}>
-              Henuz surpriz paket yok
+              Henüz sürpriz paket yok
             </Text>
             <Text variant="caption" style={styles.emptySubtext}>
-              Isletmeler yeni paketler eklediginde burada gorunecek
+              İşletmeler yeni paketler eklediğinde burada görünecek
             </Text>
           </View>
         }
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.xxl,
   },
   separator: {
-    height: 12,
+    height: 16,
   },
   empty: {
     alignItems: "center",

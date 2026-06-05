@@ -20,11 +20,23 @@ import type { BusinessCategory } from "../../lib/database.types";
 
 const CATEGORY_OPTIONS = [
   { label: "Cafe", value: "CAFE" },
+  { label: "Fırın", value: "BAKERY" },
+  { label: "Pastane", value: "PASTANE" },
   { label: "Restoran", value: "RESTAURANT" },
-  { label: "Firin", value: "BAKERY" },
+  { label: "Fast Food", value: "FASTFOOD" },
+  { label: "Tatlıcı", value: "TATLI" },
+  { label: "Büfe", value: "BUFE" },
+  { label: "Kasap", value: "KASAP" },
+  { label: "Manav", value: "MANAV" },
   { label: "Market", value: "MARKET" },
-  { label: "Pub", value: "PUB" },
-  { label: "Diger", value: "OTHER" },
+  { label: "Pub / Bar", value: "PUB" },
+  { label: "Pet Shop", value: "PETSHOP" },
+  { label: "Eczane", value: "PHARMACY" },
+  { label: "Güzellik / Kuaför", value: "BEAUTY" },
+  { label: "Çiçekçi", value: "FLORIST" },
+  { label: "Spor Salonu", value: "GYM" },
+  { label: "Veteriner", value: "VET" },
+  { label: "Diğer (Manuel Yaz)", value: "OTHER" },
 ];
 
 const cityOptions = cities.map((c) => ({ label: c.label, value: c.key }));
@@ -45,6 +57,7 @@ export default function BusinessRegisterScreen() {
   const [district, setDistrict] = useState("");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
+  const [customCategory, setCustomCategory] = useState("");
 
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
@@ -53,7 +66,7 @@ export default function BusinessRegisterScreen() {
   const selectedCity = cities.find((c) => c.key === cityKey);
   const districtOptions = selectedCity
     ? selectedCity.districts
-        .filter((d) => d !== "Tum ilceler")
+        .filter((d) => d !== "Tüm ilçeler")
         .map((d) => ({ label: d, value: d }))
     : [];
 
@@ -66,7 +79,7 @@ export default function BusinessRegisterScreen() {
     setError("");
 
     if (!ownerName.trim()) {
-      setError("Isletme sahibi adi gerekli.");
+      setError("İşletme sahibi adı gerekli.");
       return;
     }
     if (!email.trim()) {
@@ -74,23 +87,27 @@ export default function BusinessRegisterScreen() {
       return;
     }
     if (!password || password.length < 6) {
-      setError("Sifre en az 6 karakter olmali.");
+      setError("Şifre en az 6 karakter olmalı.");
       return;
     }
     if (!businessName.trim()) {
-      setError("Isletme adi gerekli.");
+      setError("İşletme adı gerekli.");
       return;
     }
     if (!category) {
-      setError("Kategori seciniz.");
+      setError("Kategori seçiniz.");
+      return;
+    }
+    if (category === "OTHER" && !customCategory.trim()) {
+      setError("Lütfen kategori adını yazınız.");
       return;
     }
     if (!cityKey) {
-      setError("Sehir seciniz.");
+      setError("Şehir seçiniz.");
       return;
     }
     if (!district) {
-      setError("Ilce seciniz.");
+      setError("İlçe seçiniz.");
       return;
     }
     if (!address.trim()) {
@@ -116,6 +133,8 @@ export default function BusinessRegisterScreen() {
       await createBusiness({
         businessName: businessName.trim(),
         category: category as BusinessCategory,
+        customCategory:
+          category === "OTHER" ? customCategory.trim() : undefined,
         cityKey,
         cityLabel,
         district,
@@ -126,7 +145,7 @@ export default function BusinessRegisterScreen() {
       await refreshProfile();
       router.replace("/(business)/dashboard");
     } catch (e: any) {
-      setError(e.message ?? "Bir hata olustu.");
+      setError(e.message ?? "Bir hata oluştu.");
     } finally {
       setPending(false);
     }
@@ -142,17 +161,17 @@ export default function BusinessRegisterScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
-          <Text variant="title">Isletme Kayit</Text>
+          <Text variant="title">İşletme Kayıt</Text>
           <Text variant="caption" style={styles.subtitle}>
-            Isletmeni kaydet, kampanyalarini paylas.
+            İşletmeni kaydet, kampanyalarını paylaş.
           </Text>
         </View>
 
         {/* Account fields */}
         <View style={styles.form}>
           <Input
-            label="Isletme Sahibi Adi"
-            placeholder="Ahmet Yilmaz"
+            label="İşletme Sahibi Adı"
+            placeholder="Ahmet Yılmaz"
             value={ownerName}
             onChangeText={setOwnerName}
             autoCapitalize="words"
@@ -170,7 +189,7 @@ export default function BusinessRegisterScreen() {
           />
 
           <Input
-            label="Sifre"
+            label="Şifre"
             placeholder="******"
             value={password}
             onChangeText={setPassword}
@@ -183,14 +202,14 @@ export default function BusinessRegisterScreen() {
           <View style={styles.separator}>
             <View style={styles.separatorLine} />
             <Text variant="muted" style={styles.separatorText}>
-              Isletme Bilgileri
+              İşletme Bilgileri
             </Text>
             <View style={styles.separatorLine} />
           </View>
 
           <Input
-            label="Isletme Adi"
-            placeholder="Kahve Ustasi"
+            label="İşletme Adı"
+            placeholder="Kahve Ustası"
             value={businessName}
             onChangeText={setBusinessName}
             autoCapitalize="words"
@@ -201,28 +220,38 @@ export default function BusinessRegisterScreen() {
             options={CATEGORY_OPTIONS}
             value={category}
             onChange={setCategory}
-            placeholder="Kategori seciniz..."
+            placeholder="Kategori seçiniz..."
           />
 
+          {category === "OTHER" && (
+            <Input
+              label="Kategori Adı"
+              placeholder="Örn: Kuruyemişçi, Dondurma, Börekçi..."
+              value={customCategory}
+              onChangeText={setCustomCategory}
+              autoCapitalize="words"
+            />
+          )}
+
           <Select
-            label="Sehir"
+            label="Şehir"
             options={cityOptions}
             value={cityKey}
             onChange={handleCityChange}
-            placeholder="Sehir seciniz..."
+            placeholder="Şehir seçiniz..."
           />
 
           <Select
-            label="Ilce"
+            label="İlçe"
             options={districtOptions}
             value={district}
             onChange={setDistrict}
-            placeholder={cityKey ? "Ilce seciniz..." : "Once sehir seciniz"}
+            placeholder={cityKey ? "İlçe seçiniz..." : "Önce şehir seçiniz"}
           />
 
           <Input
             label="Adres"
-            placeholder="Sinanpasa Mh., Besiktas"
+            placeholder="Sinanpaşa Mh., Beşiktaş"
             value={address}
             onChangeText={setAddress}
             autoCapitalize="sentences"
@@ -242,7 +271,7 @@ export default function BusinessRegisterScreen() {
           ) : null}
 
           <Button
-            title="Isletme Olustur"
+            title="İşletme Oluştur"
             onPress={handleSubmit}
             loading={pending}
             style={styles.submitButton}
@@ -252,8 +281,8 @@ export default function BusinessRegisterScreen() {
         <View style={styles.links}>
           <Link href="/(auth)/business-login" asChild>
             <Text style={styles.linkText}>
-              Zaten hesabin var mi?{" "}
-              <Text style={styles.linkBold}>Giris yap</Text>
+              Zaten hesabın var mı?{" "}
+              <Text style={styles.linkBold}>Giriş yap</Text>
             </Text>
           </Link>
         </View>
@@ -295,7 +324,7 @@ const styles = StyleSheet.create({
     marginHorizontal: Spacing.md,
   },
   errorText: {
-    color: Colors.magenta,
+    color: Colors.action,
     fontSize: 13,
     marginBottom: Spacing.md,
   },
@@ -312,7 +341,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   linkBold: {
-    color: Colors.blue,
+    color: Colors.accentLight,
     fontWeight: "600",
   },
 });

@@ -5,10 +5,11 @@ import {
   TouchableOpacity,
   Modal,
   FlatList,
-  SafeAreaView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Text } from "./Text";
 import { Colors, BorderRadius, Spacing, FontSize } from "../../lib/constants";
+import { ChevronDown, Check } from "lucide-react-native";
 
 type Option = { label: string; value: string };
 
@@ -19,7 +20,6 @@ type Props = {
   onChange: (value: string) => void;
   placeholder?: string;
 };
-import { ChevronDown } from "lucide-react-native";
 
 export function Select({
   label,
@@ -55,7 +55,7 @@ export function Select({
           <View style={styles.modalHeader}>
             <Text variant="heading">{label}</Text>
             <TouchableOpacity onPress={() => setOpen(false)}>
-              <Text style={{ color: Colors.blue, fontWeight: "600" }}>
+              <Text style={{ color: Colors.accent, fontWeight: "600" }}>
                 Kapat
               </Text>
             </TouchableOpacity>
@@ -77,11 +77,14 @@ export function Select({
                 <Text
                   style={[
                     styles.optionText,
-                    item.value === value && { color: Colors.blue },
+                    item.value === value && { color: Colors.accent },
                   ]}
                 >
                   {item.label}
                 </Text>
+                {item.value === value && (
+                  <Check size={18} color={Colors.accent} />
+                )}
               </TouchableOpacity>
             )}
           />
@@ -102,8 +105,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
     borderRadius: BorderRadius.md,
-    backgroundColor: Colors.white,
-    paddingVertical: 12,
+    backgroundColor: Colors.surface,
+    paddingVertical: 14,
     paddingHorizontal: Spacing.md,
     marginTop: Spacing.xs,
   },
@@ -124,13 +127,16 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.border,
   },
   option: {
-    paddingVertical: 14,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 16,
     paddingHorizontal: Spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
   },
   optionActive: {
-    backgroundColor: Colors.blueSoft,
+    backgroundColor: Colors.accentSoft,
   },
   optionText: {
     fontSize: FontSize.base,

@@ -6,10 +6,11 @@ import {
   StyleSheet,
 } from "react-native";
 import { Image } from "expo-image";
+import { Info } from "lucide-react-native";
 import { type MockCampaign, categoryMeta } from "../lib/mock-campaigns";
 import { formatPrice } from "../lib/utils";
 import { CountdownTimer } from "./CountdownTimer";
-import { Colors, Spacing, FontSize, BorderRadius } from "../lib/constants";
+import { Colors, Spacing, FontSize, BorderRadius, Shadow } from "../lib/constants";
 
 type Props = {
   campaign: MockCampaign;
@@ -46,7 +47,7 @@ export function CampaignCard({ campaign, onPress }: Props) {
           transition={300}
         />
 
-        {/* Gradient overlay for readability */}
+        {/* Gradient overlay */}
         <View style={styles.gradientOverlay} />
 
         {/* Top-left: discount badge */}
@@ -56,17 +57,10 @@ export function CampaignCard({ campaign, onPress }: Props) {
               styles.discountBadge,
               discount >= 50
                 ? styles.discountBadgeFire
-                : styles.discountBadgeNeutral,
+                : styles.discountBadgeNormal,
             ]}
           >
-            <Text
-              style={[
-                styles.discountText,
-                discount >= 50
-                  ? styles.discountTextFire
-                  : styles.discountTextNeutral,
-              ]}
-            >
+            <Text style={styles.discountText}>
               %{discount} indirim
             </Text>
           </View>
@@ -80,11 +74,18 @@ export function CampaignCard({ campaign, onPress }: Props) {
           />
         </View>
 
-        {/* Bottom-left: category chip */}
+        {/* Bottom-left: category chip — white glass */}
         <View style={styles.bottomLeftBadge}>
           <View style={styles.categoryChip}>
             <Text style={styles.categoryEmoji}>{cat.emoji}</Text>
             <Text style={styles.categoryLabel}>{cat.label}</Text>
+          </View>
+        </View>
+
+        {/* Bottom-right: concept image indicator */}
+        <View style={styles.bottomRightBadge}>
+          <View style={styles.conceptIcon}>
+            <Info size={11} color={Colors.textMute} strokeWidth={2.5} />
           </View>
         </View>
       </View>
@@ -117,7 +118,7 @@ export function CampaignCard({ campaign, onPress }: Props) {
             </Text>
           </View>
           <View style={styles.priceRight}>
-            <Text style={styles.priceLabel}>Mavi Nokta fiyati</Text>
+            <Text style={styles.priceLabel}>Mavi Nokta fiyatı</Text>
             <Text style={styles.newPrice}>
               {formatPrice(campaign.newPrice)}
             </Text>
@@ -131,12 +132,12 @@ export function CampaignCard({ campaign, onPress }: Props) {
               <Text
                 style={[
                   styles.stockText,
-                  { color: stockLow ? Colors.magenta : Colors.textSoft },
+                  { color: stockLow ? Colors.action : Colors.textSoft },
                 ]}
               >
                 {stockLow
                   ? `Son ${campaign.remainingStock} paket!`
-                  : `${campaign.remainingStock} paket kaldi`}
+                  : `${campaign.remainingStock} paket kaldı`}
               </Text>
               {campaign.totalStock && (
                 <Text style={styles.stockTotal}>
@@ -151,14 +152,17 @@ export function CampaignCard({ campaign, onPress }: Props) {
                   {
                     width: `${stockPercent}%`,
                     backgroundColor: stockLow
-                      ? Colors.magenta
-                      : Colors.blue,
+                      ? Colors.action
+                      : Colors.accent,
                   },
                 ]}
               />
             </View>
           </View>
         )}
+
+        {/* Concept image footnote */}
+        <Text style={styles.conceptFootnote}>Konsept görseli</Text>
       </View>
     </TouchableOpacity>
   );
@@ -166,14 +170,14 @@ export function CampaignCard({ campaign, onPress }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    borderRadius: BorderRadius.xl,
     backgroundColor: Colors.surface,
     overflow: "hidden",
+    borderWidth: 1,
+    borderColor: Colors.border,
+    ...Shadow.md,
   },
 
-  // Image section
   imageWrapper: {
     position: "relative",
     width: "100%",
@@ -190,63 +194,55 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    height: "50%",
-    backgroundColor: "rgba(0,0,0,0.3)",
+    height: "60%",
+    backgroundColor: "rgba(0,0,0,0.35)",
   },
 
-  // Overlay badges
   topLeftBadge: {
     position: "absolute",
-    left: Spacing.md - 4,
-    top: Spacing.md - 4,
+    left: Spacing.sm,
+    top: Spacing.sm,
   },
   topRightBadge: {
     position: "absolute",
-    right: Spacing.md - 4,
-    top: Spacing.md - 4,
+    right: Spacing.sm,
+    top: Spacing.sm,
   },
   bottomLeftBadge: {
     position: "absolute",
-    left: Spacing.md - 4,
-    bottom: Spacing.md - 4,
+    left: Spacing.sm,
+    bottom: Spacing.sm,
   },
 
-  // Discount badge
   discountBadge: {
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: BorderRadius.full,
+    borderRadius: BorderRadius.sm,
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: 5,
   },
   discountBadgeFire: {
-    backgroundColor: Colors.magenta,
+    backgroundColor: Colors.action,
   },
-  discountBadgeNeutral: {
-    backgroundColor: "rgba(255,255,255,0.95)",
+  discountBadgeNormal: {
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
   discountText: {
     fontSize: 11,
-    fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  discountTextFire: {
+    fontWeight: "800",
     color: Colors.white,
-  },
-  discountTextNeutral: {
-    color: Colors.text,
+    letterSpacing: 0.3,
   },
 
-  // Category chip
+  /* White glass category chip */
   categoryChip: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: "rgba(255,255,255,0.95)",
+    backgroundColor: "rgba(255,255,255,0.9)",
     borderRadius: BorderRadius.full,
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: 5,
   },
   categoryEmoji: {
     fontSize: 12,
@@ -257,22 +253,20 @@ const styles = StyleSheet.create({
     color: Colors.text,
   },
 
-  // Body
   body: {
-    padding: Spacing.md,
-    gap: Spacing.md - 4,
+    padding: 20,
+    gap: 10,
   },
 
-  // Business row
   businessRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: Spacing.sm,
   },
   businessLogo: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: Colors.border,
   },
@@ -280,25 +274,23 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: FontSize.sm,
     fontWeight: "600",
-    color: Colors.text,
+    color: Colors.textSoft,
   },
 
-  // Slogan
   slogan: {
     fontSize: FontSize.base,
-    fontWeight: "600",
-    lineHeight: FontSize.base * 1.35,
+    fontWeight: "700",
+    lineHeight: FontSize.base * 1.4,
     color: Colors.text,
   },
 
-  // Price block
   priceBlock: {
     flexDirection: "row",
     alignItems: "flex-end",
     justifyContent: "space-between",
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    paddingTop: Spacing.md - 4,
+    paddingTop: 10,
     marginTop: Spacing.xs,
   },
   priceLabel: {
@@ -306,6 +298,7 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 1,
     color: Colors.textMute,
+    marginBottom: 2,
   },
   oldPrice: {
     fontSize: FontSize.sm,
@@ -318,11 +311,10 @@ const styles = StyleSheet.create({
   newPrice: {
     fontSize: FontSize.xxl,
     fontWeight: "900",
-    color: Colors.blue,
-    lineHeight: FontSize.xxl,
+    color: Colors.accent,
+    lineHeight: FontSize.xxl * 1.1,
   },
 
-  // Stock section
   stockSection: {
     gap: 6,
   },
@@ -333,14 +325,14 @@ const styles = StyleSheet.create({
   },
   stockText: {
     fontSize: FontSize.xs,
-    fontWeight: "500",
+    fontWeight: "600",
   },
   stockTotal: {
     fontSize: FontSize.xs,
     color: Colors.textMute,
   },
   stockBarBackground: {
-    height: 6,
+    height: 4,
     borderRadius: BorderRadius.full,
     backgroundColor: Colors.surface2,
     overflow: "hidden",
@@ -348,5 +340,27 @@ const styles = StyleSheet.create({
   stockBarFill: {
     height: "100%",
     borderRadius: BorderRadius.full,
+  },
+
+  /* Concept image indicator */
+  bottomRightBadge: {
+    position: "absolute",
+    right: Spacing.sm,
+    bottom: Spacing.sm,
+  },
+  conceptIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "rgba(255,255,255,0.7)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  conceptFootnote: {
+    fontSize: 10,
+    color: Colors.textMute,
+    letterSpacing: 0.2,
+    textAlign: "right",
+    marginTop: 2,
   },
 });
