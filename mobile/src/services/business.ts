@@ -25,27 +25,39 @@ export async function createBusiness(input: CreateBusinessInput) {
   const baseSlug = slugify(input.businessName) || "isletme";
   const slug = `${baseSlug}-${user.id.slice(0, 6)}`;
 
-  const { data, error } = await supabase
+  const row = {
+    profile_id: user.id,
+    name: input.businessName,
+    slug,
+    category: input.category,
+    description:
+      input.category === "OTHER" && input.customCategory
+        ? input.customCategory
+        : null,
+    city: input.cityLabel,
+    district: input.district,
+    address: input.address,
+    phone: input.phone,
+    latitude: lat,
+    longitude: lng,
+    is_active: true,
+  };
+
+  // Retry once on schema cache error
+  let { data, error } = await supabase
     .from("businesses")
-    .insert({
-      profile_id: user.id,
-      name: input.businessName,
-      slug,
-      category: input.category,
-      description:
-        input.category === "OTHER" && input.customCategory
-          ? input.customCategory
-          : null,
-      city: input.cityLabel,
-      district: input.district,
-      address: input.address,
-      phone: input.phone,
-      latitude: lat,
-      longitude: lng,
-      is_active: true,
-    })
+    .insert(row)
     .select()
     .single();
+
+  if (error?.message?.includes("schema cache")) {
+    await new Promise((r) => setTimeout(r, 1000));
+    ({ data, error } = await supabase
+      .from("businesses")
+      .insert(row)
+      .select()
+      .single());
+  }
 
   if (error) throw error;
   return { ok: true as const, slug: data.slug };

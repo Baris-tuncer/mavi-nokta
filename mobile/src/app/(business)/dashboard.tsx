@@ -232,20 +232,31 @@ export default function DashboardScreen() {
         setBusiness(biz as Business);
         setCampaigns((camps ?? []) as Campaign[]);
         setIsDemo(false);
+      } else if (profile?.role === "BUSINESS") {
+        // Isletme hesabi var ama isletme kaydi yok
+        setBusiness(null);
+        setCampaigns([]);
+        setIsDemo(false);
       } else {
         setBusiness(DEMO_BUSINESS);
         setCampaigns(DEMO_CAMPAIGNS);
         setIsDemo(true);
       }
     } catch {
-      setBusiness(DEMO_BUSINESS);
-      setCampaigns(DEMO_CAMPAIGNS);
-      setIsDemo(true);
+      if (profile?.role === "BUSINESS") {
+        setBusiness(null);
+        setCampaigns([]);
+        setIsDemo(false);
+      } else {
+        setBusiness(DEMO_BUSINESS);
+        setCampaigns(DEMO_CAMPAIGNS);
+        setIsDemo(true);
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [profile?.role]);
 
   useEffect(() => {
     fetchData();
@@ -260,16 +271,36 @@ export default function DashboardScreen() {
     return (
       <View style={s.guardContainer}>
         <Text variant="heading" style={{ marginBottom: 8, textAlign: "center" }}>
-          Erişim Engellendi
+          Erisim Engellendi
         </Text>
         <Text variant="caption" style={{ textAlign: "center", marginBottom: 24 }}>
-          Bu sayfa sadece işletme hesaplarına açıktır.
+          Bu sayfa sadece isletme hesaplarina aciktir.
         </Text>
         <Link href="/(auth)/business-login" asChild>
           <TouchableOpacity style={s.guardLink}>
-            <Text style={s.guardLinkText}>İşletme Girişi</Text>
+            <Text style={s.guardLinkText}>Isletme Girisi</Text>
           </TouchableOpacity>
         </Link>
+      </View>
+    );
+  }
+
+  // BUSINESS rolu var ama isletme kaydi yok
+  if (profile?.role === "BUSINESS" && !business && !loading && !isDemo) {
+    return (
+      <View style={s.guardContainer}>
+        <Text variant="heading" style={{ marginBottom: 8, textAlign: "center" }}>
+          Isletme Kaydi Eksik
+        </Text>
+        <Text variant="caption" style={{ textAlign: "center", marginBottom: 24 }}>
+          Hesabin olusturuldu ama isletme bilgilerin kaydedilemedi. Tekrar dene.
+        </Text>
+        <TouchableOpacity
+          style={s.guardLink}
+          onPress={() => router.push("/(auth)/business-register")}
+        >
+          <Text style={s.guardLinkText}>Isletme Olustur</Text>
+        </TouchableOpacity>
       </View>
     );
   }

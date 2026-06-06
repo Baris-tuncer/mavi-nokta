@@ -5,15 +5,15 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  Alert,
   Keyboard,
-  Pressable,
 } from "react-native";
 import { useRouter, Link } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
 import { Button } from "../../components/ui/Button";
 import { Text } from "../../components/ui/Text";
 import { Select } from "../../components/ui/Select";
-import { Colors, Spacing, BorderRadius, FontSize } from "../../lib/constants";
+import { Colors, Spacing, BorderRadius, FontSize, Shadow } from "../../lib/constants";
 import { signUpBusiness } from "../../services/auth";
 import { createBusiness } from "../../services/business";
 import { cities } from "../../lib/mock-campaigns";
@@ -22,23 +22,23 @@ import type { BusinessCategory } from "../../lib/database.types";
 
 const CATEGORY_OPTIONS = [
   { label: "Cafe", value: "CAFE" },
-  { label: "Fırın", value: "BAKERY" },
+  { label: "Firin", value: "BAKERY" },
   { label: "Pastane", value: "PASTANE" },
   { label: "Restoran", value: "RESTAURANT" },
   { label: "Fast Food", value: "FASTFOOD" },
-  { label: "Tatlıcı", value: "TATLI" },
-  { label: "Büfe", value: "BUFE" },
+  { label: "Tatlici", value: "TATLI" },
+  { label: "Bufe", value: "BUFE" },
   { label: "Kasap", value: "KASAP" },
   { label: "Manav", value: "MANAV" },
   { label: "Market", value: "MARKET" },
   { label: "Pub / Bar", value: "PUB" },
   { label: "Pet Shop", value: "PETSHOP" },
   { label: "Eczane", value: "PHARMACY" },
-  { label: "Güzellik / Kuaför", value: "BEAUTY" },
-  { label: "Çiçekçi", value: "FLORIST" },
+  { label: "Guzellik / Kuafor", value: "BEAUTY" },
+  { label: "Cicekci", value: "FLORIST" },
   { label: "Spor Salonu", value: "GYM" },
   { label: "Veteriner", value: "VET" },
-  { label: "Diğer (Manuel Yaz)", value: "OTHER" },
+  { label: "Diger", value: "OTHER" },
 ];
 
 const cityOptions = cities.map((c) => ({ label: c.label, value: c.key }));
@@ -63,7 +63,7 @@ export default function BusinessRegisterScreen() {
   const selectedCity = cities.find((c) => c.key === cityKey);
   const districtOptions = selectedCity
     ? selectedCity.districts
-        .filter((d) => d !== "Tüm ilçeler")
+        .filter((d) => d !== "Tum ilceler")
         .map((d) => ({ label: d, value: d }))
     : [];
 
@@ -76,14 +76,14 @@ export default function BusinessRegisterScreen() {
     Keyboard.dismiss();
     setError("");
 
-    if (!ownerName.trim()) { setError("İşletme sahibi adı gerekli."); return; }
+    if (!ownerName.trim()) { setError("Isletme sahibi adi gerekli."); return; }
     if (!email.trim()) { setError("E-posta gerekli."); return; }
-    if (!password || password.length < 6) { setError("Şifre en az 6 karakter olmalı."); return; }
-    if (!businessName.trim()) { setError("İşletme adı gerekli."); return; }
-    if (!category) { setError("Kategori seçiniz."); return; }
-    if (category === "OTHER" && !customCategory.trim()) { setError("Lütfen kategori adını yazınız."); return; }
-    if (!cityKey) { setError("Şehir seçiniz."); return; }
-    if (!district) { setError("İlçe seçiniz."); return; }
+    if (!password || password.length < 6) { setError("Sifre en az 6 karakter olmali."); return; }
+    if (!businessName.trim()) { setError("Isletme adi gerekli."); return; }
+    if (!category) { setError("Kategori seciniz."); return; }
+    if (category === "OTHER" && !customCategory.trim()) { setError("Kategori adini yaziniz."); return; }
+    if (!cityKey) { setError("Sehir seciniz."); return; }
+    if (!district) { setError("Ilce seciniz."); return; }
     if (!address.trim()) { setError("Adres gerekli."); return; }
 
     setPending(true);
@@ -108,181 +108,202 @@ export default function BusinessRegisterScreen() {
       await refreshProfile();
       router.replace("/(business)/dashboard");
     } catch (e: any) {
-      setError(e.message ?? "Bir hata oluştu.");
+      setError(e.message ?? "Bir hata olustu.");
     } finally {
       setPending(false);
     }
   }
 
   return (
-    <Pressable style={styles.flex} onPress={Keyboard.dismiss}>
-      <ScrollView
-        contentContainerStyle={styles.container}
-        keyboardShouldPersistTaps="always"
-        showsVerticalScrollIndicator={false}
+    <ScrollView
+      style={styles.scroll}
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="always"
+      showsVerticalScrollIndicator={false}
+      onScrollBeginDrag={Keyboard.dismiss}
+    >
+      {/* Header */}
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => router.back()}
+        activeOpacity={0.7}
       >
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-          activeOpacity={0.7}
-        >
-          <ChevronLeft size={24} color={Colors.text} />
-        </TouchableOpacity>
+        <ChevronLeft size={24} color={Colors.text} />
+      </TouchableOpacity>
 
-        <Text variant="title">İşletme Kayıt</Text>
-        <Text variant="caption" style={styles.subtitle}>
-          İşletmeni kaydet, kampanyalarını paylaş.
-        </Text>
+      <Text style={styles.title}>Isletme Kayit</Text>
+      <Text style={styles.subtitle}>
+        Isletmeni kaydet, kampanyalarini paylas.
+      </Text>
 
-        {/* Account fields */}
-        <Text variant="label" style={styles.label}>İşletme Sahibi Adı</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Ahmet Yılmaz"
-          placeholderTextColor={Colors.textMute}
-          value={ownerName}
-          onChangeText={setOwnerName}
-          autoCapitalize="words"
-          returnKeyType="next"
-        />
+      {/* Section 1: Hesap Bilgileri */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Hesap Bilgileri</Text>
 
-        <Text variant="label" style={styles.label}>E-posta</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="ornek@mail.com"
-          placeholderTextColor={Colors.textMute}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          returnKeyType="next"
-        />
-
-        <Text variant="label" style={styles.label}>Şifre</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="******"
-          placeholderTextColor={Colors.textMute}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          returnKeyType="next"
-        />
-        <Text variant="muted" style={styles.hint}>6+ karakter</Text>
-
-        {/* Separator */}
-        <View style={styles.separator}>
-          <View style={styles.separatorLine} />
-          <Text variant="muted" style={styles.separatorText}>
-            İşletme Bilgileri
-          </Text>
-          <View style={styles.separatorLine} />
+        <View style={styles.fieldGroup}>
+          <Text style={styles.label}>Ad Soyad</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Ahmet Yilmaz"
+            placeholderTextColor={Colors.textMute}
+            value={ownerName}
+            onChangeText={setOwnerName}
+            autoCapitalize="words"
+            returnKeyType="next"
+          />
         </View>
 
-        <Text variant="label" style={styles.label}>İşletme Adı</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Kahve Ustası"
-          placeholderTextColor={Colors.textMute}
-          value={businessName}
-          onChangeText={setBusinessName}
-          autoCapitalize="words"
-          returnKeyType="next"
-        />
+        <View style={styles.fieldGroup}>
+          <Text style={styles.label}>E-posta</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="ornek@mail.com"
+            placeholderTextColor={Colors.textMute}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            returnKeyType="next"
+          />
+        </View>
+
+        <View style={styles.fieldGroup}>
+          <Text style={styles.label}>Sifre</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="******"
+            placeholderTextColor={Colors.textMute}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            returnKeyType="next"
+          />
+          <Text style={styles.hint}>En az 6 karakter</Text>
+        </View>
+      </View>
+
+      {/* Section 2: Isletme Bilgileri */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Isletme Bilgileri</Text>
+
+        <View style={styles.fieldGroup}>
+          <Text style={styles.label}>Isletme Adi</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Kahve Ustasi"
+            placeholderTextColor={Colors.textMute}
+            value={businessName}
+            onChangeText={setBusinessName}
+            autoCapitalize="words"
+            returnKeyType="next"
+          />
+        </View>
 
         <Select
           label="Kategori"
           options={CATEGORY_OPTIONS}
           value={category}
           onChange={setCategory}
-          placeholder="Kategori seçiniz..."
+          placeholder="Kategori seciniz..."
         />
 
         {category === "OTHER" && (
-          <>
-            <Text variant="label" style={styles.label}>Kategori Adı</Text>
+          <View style={styles.fieldGroup}>
+            <Text style={styles.label}>Kategori Adi</Text>
             <TextInput
               style={styles.input}
-              placeholder="Örn: Kuruyemişçi, Dondurma, Börekçi..."
+              placeholder="Orn: Kuruyemisci, Dondurma..."
               placeholderTextColor={Colors.textMute}
               value={customCategory}
               onChangeText={setCustomCategory}
               autoCapitalize="words"
             />
-          </>
+          </View>
         )}
+      </View>
+
+      {/* Section 3: Konum */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Konum</Text>
 
         <Select
-          label="Şehir"
+          label="Sehir"
           options={cityOptions}
           value={cityKey}
           onChange={handleCityChange}
-          placeholder="Şehir seçiniz..."
+          placeholder="Sehir seciniz..."
         />
 
         <Select
-          label="İlçe"
+          label="Ilce"
           options={districtOptions}
           value={district}
           onChange={setDistrict}
-          placeholder={cityKey ? "İlçe seçiniz..." : "Önce şehir seçiniz"}
+          placeholder={cityKey ? "Ilce seciniz..." : "Once sehir seciniz"}
         />
 
-        <Text variant="label" style={styles.label}>Adres</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Sinanpaşa Mh., Beşiktaş"
-          placeholderTextColor={Colors.textMute}
-          value={address}
-          onChangeText={setAddress}
-          autoCapitalize="sentences"
-          returnKeyType="next"
-        />
-
-        <Text variant="label" style={styles.label}>Telefon</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="05XX XXX XX XX"
-          placeholderTextColor={Colors.textMute}
-          value={phone}
-          onChangeText={setPhone}
-          keyboardType="phone-pad"
-        />
-
-        {error ? (
-          <Text style={styles.errorText}>{error}</Text>
-        ) : null}
-
-        <Button
-          title="İşletme Oluştur"
-          onPress={handleSubmit}
-          loading={pending}
-          style={styles.submitButton}
-        />
-
-        <View style={styles.links}>
-          <Link href="/(auth)/business-login" asChild>
-            <Text style={styles.linkText}>
-              Zaten hesabın var mı?{" "}
-              <Text style={styles.linkBold}>Giriş yap</Text>
-            </Text>
-          </Link>
+        <View style={styles.fieldGroup}>
+          <Text style={styles.label}>Adres</Text>
+          <TextInput
+            style={[styles.input, styles.inputMultiline]}
+            placeholder="Sinanpasa Mh., Besiktas"
+            placeholderTextColor={Colors.textMute}
+            value={address}
+            onChangeText={setAddress}
+            autoCapitalize="sentences"
+            multiline
+            numberOfLines={2}
+          />
         </View>
-      </ScrollView>
-    </Pressable>
+
+        <View style={styles.fieldGroup}>
+          <Text style={styles.label}>Telefon (opsiyonel)</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="05XX XXX XX XX"
+            placeholderTextColor={Colors.textMute}
+            value={phone}
+            onChangeText={setPhone}
+            keyboardType="phone-pad"
+          />
+        </View>
+      </View>
+
+      {/* Error & Submit */}
+      {error ? (
+        <View style={styles.errorBox}>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      ) : null}
+
+      <Button
+        title="Isletme Olustur"
+        onPress={handleSubmit}
+        loading={pending}
+        style={styles.submitButton}
+      />
+
+      <View style={styles.links}>
+        <Link href="/(auth)/business-login" asChild>
+          <Text style={styles.linkText}>
+            Zaten hesabin var mi?{" "}
+            <Text style={styles.linkBold}>Giris yap</Text>
+          </Text>
+        </Link>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: {
+  scroll: {
     flex: 1,
     backgroundColor: Colors.bg,
   },
   container: {
-    flexGrow: 1,
     padding: Spacing.lg,
     paddingTop: 60,
-    paddingBottom: Spacing.xxl,
+    paddingBottom: 40,
   },
   backButton: {
     width: 40,
@@ -291,55 +312,86 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.lg,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: Colors.text,
+    marginBottom: Spacing.xs,
   },
   subtitle: {
-    marginTop: Spacing.sm,
+    fontSize: FontSize.base,
+    color: Colors.textMute,
     marginBottom: Spacing.xl,
   },
+
+  /* Sections */
+  section: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    padding: Spacing.md,
+    marginBottom: Spacing.lg,
+  },
+  sectionTitle: {
+    fontSize: FontSize.sm,
+    fontWeight: "700",
+    color: Colors.accent,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+    marginBottom: Spacing.md,
+  },
+
+  /* Fields */
+  fieldGroup: {
+    marginBottom: Spacing.md,
+  },
   label: {
-    marginBottom: Spacing.xs,
+    fontSize: FontSize.sm,
+    fontWeight: "600",
+    color: Colors.textSoft,
+    marginBottom: 6,
   },
   input: {
     borderWidth: 1,
     borderColor: Colors.border,
     borderRadius: BorderRadius.md,
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.bg,
     fontSize: FontSize.base,
     color: Colors.text,
-    paddingVertical: 14,
+    paddingVertical: 12,
     paddingHorizontal: Spacing.md,
-    marginBottom: Spacing.md,
+  },
+  inputMultiline: {
+    minHeight: 60,
+    textAlignVertical: "top",
   },
   hint: {
-    marginTop: -Spacing.sm,
+    fontSize: FontSize.xs,
+    color: Colors.textMute,
+    marginTop: 4,
+  },
+
+  /* Error */
+  errorBox: {
+    backgroundColor: "#FEF2F2",
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
     marginBottom: Spacing.md,
-  },
-  separator: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: Spacing.lg,
-  },
-  separatorLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: Colors.border,
-  },
-  separatorText: {
-    marginHorizontal: Spacing.md,
   },
   errorText: {
     color: Colors.action,
     fontSize: 13,
-    marginBottom: Spacing.md,
   },
+
   submitButton: {
-    marginTop: Spacing.sm,
+    marginBottom: Spacing.md,
   },
   links: {
     alignItems: "center",
     gap: Spacing.md,
-    marginTop: Spacing.xl,
     paddingBottom: Spacing.xl,
   },
   linkText: {

@@ -7,7 +7,6 @@ import {
   StyleSheet,
   Alert,
   Keyboard,
-  Pressable,
 } from "react-native";
 import { useRouter, Link } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
@@ -90,11 +89,12 @@ export default function CustomerRegisterScreen() {
   }
 
   return (
-    <Pressable style={styles.flex} onPress={Keyboard.dismiss}>
       <ScrollView
+        style={styles.flex}
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="always"
         showsVerticalScrollIndicator={false}
+        onScrollBeginDrag={Keyboard.dismiss}
       >
         <TouchableOpacity
           style={styles.backButton}
@@ -185,7 +185,6 @@ export default function CustomerRegisterScreen() {
           </Link>
         </View>
       </ScrollView>
-    </Pressable>
   );
 }
 
