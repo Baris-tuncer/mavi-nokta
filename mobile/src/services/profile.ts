@@ -22,13 +22,18 @@ export async function getCurrentProfile() {
     : null;
 }
 
-export async function updateProfileExtras(phone?: string, city?: string) {
+export async function updateProfileExtras(
+  fullName?: string,
+  phone?: string,
+  city?: string
+) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Auth gerekli");
 
   const updates: Record<string, string> = {};
+  if (fullName) updates.full_name = fullName;
   if (phone) updates.phone = phone;
   if (city) updates.city = city;
 

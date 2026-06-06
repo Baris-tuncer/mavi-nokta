@@ -75,6 +75,7 @@ export default function CustomerRegisterScreen() {
       }
 
       await updateProfileExtras(
+        name.trim(),
         phone.trim() || undefined,
         city.trim() || undefined
       );

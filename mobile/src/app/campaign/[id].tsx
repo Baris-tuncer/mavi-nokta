@@ -45,6 +45,7 @@ export default function CampaignDetailScreen() {
   );
   const [loading, setLoading] = useState(true);
   const [claiming, setClaiming] = useState(false);
+  const [isReal, setIsReal] = useState(false);
 
   const fetchCampaign = useCallback(async () => {
     if (!id) return;
@@ -52,13 +53,16 @@ export default function CampaignDetailScreen() {
       const data = await getCampaignById(id);
       if (data) {
         setCampaign(data);
+        setIsReal(true);
       } else {
         // API'de bulunamazsa mock'tan dene
         const mock = mockCampaigns.find((c) => c.id === id);
         if (mock) setCampaign(mock);
+        setIsReal(false);
       }
     } catch {
       // Hata durumunda mevcut state'i koru (mock ile baslatildi)
+      setIsReal(false);
     } finally {
       setLoading(false);
     }
@@ -267,13 +271,21 @@ export default function CampaignDetailScreen() {
           </View>
 
           {/* CTA Button */}
-          <Button
-            title={claiming ? "Yakalanıyor..." : "Bu fırsatı yakala"}
-            variant="primary"
-            loading={claiming}
-            onPress={handleClaim}
-            style={styles.ctaButton}
-          />
+          {isReal ? (
+            <Button
+              title={claiming ? "Yakalanıyor..." : "Bu fırsatı yakala"}
+              variant="primary"
+              loading={claiming}
+              onPress={handleClaim}
+              style={styles.ctaButton}
+            />
+          ) : (
+            <View style={styles.demoNotice}>
+              <Text style={styles.demoNoticeText}>
+                Bu bir demo kampanyadır. Gerçek kampanyalar yakında burada!
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>
@@ -468,5 +480,16 @@ const styles = StyleSheet.create({
 
   ctaButton: {
     width: "100%",
+  },
+  demoNotice: {
+    backgroundColor: Colors.surface2,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+    alignItems: "center",
+  },
+  demoNoticeText: {
+    fontSize: FontSize.sm,
+    color: Colors.textMute,
+    textAlign: "center",
   },
 });
