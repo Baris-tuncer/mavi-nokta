@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   ScrollView,
   RefreshControl,
@@ -14,6 +14,7 @@ import { SmartFilters, type SmartFilterKey } from "../../components/SmartFilters
 import { VibrantCampaignCard } from "../../components/VibrantCampaignCard";
 import { useUserLocation } from "../../hooks/useUserLocation";
 import { haversineDistance } from "../../lib/geo";
+import { getActiveCampaigns } from "../../services/campaign";
 import { mockCampaigns, type MockCampaign } from "../../lib/mock-campaigns";
 import { Colors, Spacing, FontSize } from "../../lib/constants";
 
@@ -23,11 +24,26 @@ const FALLBACK_RANGE = 1500; // If user is >1.5km from nearest business, use dem
 export default function RadarScreen() {
   const router = useRouter();
   const { location, loading: locationLoading } = useUserLocation();
-  const [campaigns] = useState<MockCampaign[]>(mockCampaigns);
+  const [campaigns, setCampaigns] = useState<MockCampaign[]>(mockCampaigns);
   const [activeFilters, setActiveFilters] = useState<Set<SmartFilterKey>>(
     new Set()
   );
   const [refreshing, setRefreshing] = useState(false);
+
+  const fetchCampaigns = useCallback(async () => {
+    try {
+      const data = await getActiveCampaigns();
+      setCampaigns(data.length > 0 ? data : mockCampaigns);
+    } catch {
+      setCampaigns(mockCampaigns);
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCampaigns();
+  }, [fetchCampaigns]);
 
   const toggleFilter = useCallback((key: SmartFilterKey) => {
     setActiveFilters((prev) => {
@@ -43,8 +59,8 @@ export default function RadarScreen() {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 800);
-  }, []);
+    fetchCampaigns();
+  }, [fetchCampaigns]);
 
   // Smart center: if user is far from all businesses, fall back to Kadıköy
   const center = useMemo(() => {

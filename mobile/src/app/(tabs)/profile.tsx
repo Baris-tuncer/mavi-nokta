@@ -1,24 +1,52 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   View,
   ScrollView,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
   StyleSheet,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../providers/AuthProvider";
 import { signOut } from "../../services/auth";
+import { getMyClaims, type MyClaim } from "../../services/claim";
 import { Text } from "../../components/ui/Text";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
 import { Colors, Spacing, BorderRadius, FontSize, Shadow } from "../../lib/constants";
 
+const STATUS_LABELS: Record<string, { label: string; variant: "accent" | "eco" | "neutral" | "action" | "amber" }> = {
+  RESERVED: { label: "Bekliyor", variant: "accent" },
+  REDEEMED: { label: "Kullanildi", variant: "eco" },
+  EXPIRED: { label: "Suresi Doldu", variant: "neutral" },
+  CANCELLED: { label: "Iptal", variant: "amber" },
+};
+
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, profile, loading } = useAuth();
   const [signingOut, setSigningOut] = useState(false);
+  const [claims, setClaims] = useState<MyClaim[]>([]);
+  const [claimsLoading, setClaimsLoading] = useState(false);
+
+  const fetchClaims = useCallback(async () => {
+    if (!user) return;
+    setClaimsLoading(true);
+    try {
+      const data = await getMyClaims();
+      setClaims(data);
+    } catch {
+      // sessizce hata yut
+    } finally {
+      setClaimsLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchClaims();
+  }, [fetchClaims]);
 
   const handleSignOut = async () => {
     Alert.alert("Çıkış Yap", "Hesabınızdan çıkmak istediğinize emin misiniz?", [
@@ -133,6 +161,56 @@ export default function ProfileScreen() {
           </Text>
           <Badge label={roleLabel} variant={roleBadgeVariant} />
         </View>
+
+        {/* Firsatlarim */}
+        {profile?.role !== "BUSINESS" && (
+          <View style={styles.claimsSection}>
+            <Text style={styles.claimsSectionTitle}>Firsatlarim</Text>
+            {claimsLoading ? (
+              <ActivityIndicator
+                size="small"
+                color={Colors.accent}
+                style={{ marginVertical: Spacing.md }}
+              />
+            ) : claims.length === 0 ? (
+              <View style={styles.claimsEmpty}>
+                <Text style={styles.claimsEmptyText}>
+                  Henuz firsat yakalamadin
+                </Text>
+              </View>
+            ) : (
+              claims.map((claim) => {
+                const st = STATUS_LABELS[claim.status] ?? {
+                  label: claim.status,
+                  variant: "neutral" as const,
+                };
+                return (
+                  <View key={claim.id} style={styles.claimCard}>
+                    <View style={styles.claimCardHeader}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.claimTitle}>
+                          {claim.campaign.title}
+                        </Text>
+                        <Text style={styles.claimBusiness}>
+                          {claim.campaign.business.name} -{" "}
+                          {claim.campaign.business.district}
+                        </Text>
+                      </View>
+                      <Badge
+                        label={st.label}
+                        variant={st.variant}
+                      />
+                    </View>
+                    <View style={styles.claimCodeRow}>
+                      <Text style={styles.claimCodeLabel}>Kod:</Text>
+                      <Text style={styles.claimCode}>{claim.code}</Text>
+                    </View>
+                  </View>
+                );
+              })
+            )}
+          </View>
+        )}
 
         <View style={styles.actions}>
           {profile?.role === "BUSINESS" && (
@@ -265,6 +343,64 @@ const styles = StyleSheet.create({
   profileEmail: {
     marginBottom: Spacing.sm,
   },
+  claimsSection: {
+    marginTop: Spacing.xl,
+  },
+  claimsSectionTitle: {
+    fontSize: FontSize.lg,
+    fontWeight: "700",
+    color: Colors.text,
+    marginBottom: Spacing.md,
+  },
+  claimsEmpty: {
+    paddingVertical: Spacing.lg,
+    alignItems: "center",
+  },
+  claimsEmptyText: {
+    fontSize: FontSize.sm,
+    color: Colors.textMute,
+  },
+  claimCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    padding: Spacing.md,
+    marginBottom: Spacing.sm,
+  },
+  claimCardHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    marginBottom: Spacing.xs,
+  },
+  claimTitle: {
+    fontSize: FontSize.base,
+    fontWeight: "600",
+    color: Colors.text,
+  },
+  claimBusiness: {
+    fontSize: FontSize.xs,
+    color: Colors.textMute,
+    marginTop: 2,
+  },
+  claimCodeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: Spacing.xs,
+    gap: Spacing.xs,
+  },
+  claimCodeLabel: {
+    fontSize: FontSize.sm,
+    color: Colors.textSoft,
+  },
+  claimCode: {
+    fontSize: FontSize.lg,
+    fontWeight: "800",
+    color: Colors.accent,
+    letterSpacing: 2,
+  },
+
   actions: {
     marginTop: Spacing.xl,
     gap: Spacing.sm,

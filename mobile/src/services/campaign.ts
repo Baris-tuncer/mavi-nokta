@@ -76,6 +76,64 @@ export async function getActiveCampaigns(): Promise<MockCampaign[]> {
   });
 }
 
+export async function getCampaignById(
+  id: string
+): Promise<MockCampaign | null> {
+  const { data, error } = await supabase
+    .from("campaigns")
+    .select(
+      `
+      id, slogan, title, description, image_url,
+      old_price, new_price, starts_at, ends_at,
+      total_stock, remaining_stock, is_surprise_package,
+      businesses!inner (
+        id, name, slug, category, city, district,
+        address, latitude, longitude, logo_url
+      )
+    `
+    )
+    .eq("id", id)
+    .single();
+
+  if (error || !data) return null;
+
+  const row = data as any;
+  const b = Array.isArray(row.businesses)
+    ? row.businesses[0]
+    : row.businesses;
+
+  return {
+    id: row.id,
+    slug: row.id,
+    slogan: row.slogan,
+    title: row.title,
+    description: row.description || "",
+    imageUrl:
+      row.image_url ||
+      "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&q=80",
+    oldPrice: Number(row.old_price),
+    newPrice: Number(row.new_price),
+    startsAt: new Date(row.starts_at),
+    endsAt: new Date(row.ends_at),
+    totalStock: row.total_stock,
+    remainingStock: row.remaining_stock,
+    isSurprisePackage: row.is_surprise_package,
+    business: {
+      name: b.name,
+      slug: b.slug,
+      category: b.category,
+      city: b.city,
+      district: b.district,
+      address: b.address,
+      latitude: Number(b.latitude),
+      longitude: Number(b.longitude),
+      logoUrl:
+        b.logo_url ||
+        "https://images.unsplash.com/photo-1559925393-8be0ec4767c8?w=96&q=80",
+    },
+  } satisfies MockCampaign;
+}
+
 export async function getMyBusinessId(): Promise<string | null> {
   const {
     data: { user },

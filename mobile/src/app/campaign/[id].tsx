@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   ScrollView,
@@ -6,6 +6,8 @@ import {
   StyleSheet,
   Dimensions,
   Pressable,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Image } from "expo-image";
@@ -15,6 +17,9 @@ import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { CountdownTimer } from "../../components/CountdownTimer";
 import { mockCampaigns, categoryMeta } from "../../lib/mock-campaigns";
+import { getCampaignById } from "../../services/campaign";
+import { claimCampaign } from "../../services/claim";
+import { useAuth } from "../../providers/AuthProvider";
 import { formatPrice } from "../../lib/utils";
 import {
   Colors,
@@ -33,9 +38,71 @@ const CONCEPT_TEXT =
 export default function CampaignDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { user } = useAuth();
   const [tooltipVisible, setTooltipVisible] = useState(false);
+  const [campaign, setCampaign] = useState(
+    () => mockCampaigns.find((c) => c.id === id) ?? null
+  );
+  const [loading, setLoading] = useState(true);
+  const [claiming, setClaiming] = useState(false);
 
-  const campaign = mockCampaigns.find((c) => c.id === id);
+  const fetchCampaign = useCallback(async () => {
+    if (!id) return;
+    try {
+      const data = await getCampaignById(id);
+      if (data) {
+        setCampaign(data);
+      } else {
+        // API'de bulunamazsa mock'tan dene
+        const mock = mockCampaigns.find((c) => c.id === id);
+        if (mock) setCampaign(mock);
+      }
+    } catch {
+      // Hata durumunda mevcut state'i koru (mock ile baslatildi)
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    fetchCampaign();
+  }, [fetchCampaign]);
+
+  const handleClaim = useCallback(async () => {
+    if (!user) {
+      router.push("/(auth)/customer-login");
+      return;
+    }
+    if (!id) return;
+
+    setClaiming(true);
+    try {
+      const result = await claimCampaign(id);
+      if ("error" in result) {
+        Alert.alert("Hata", result.error);
+      } else {
+        Alert.alert(
+          "Firsat Yakalandi!",
+          `Kodunuz: ${result.claim.code}\n\nBu kodu isletmede gosterin.`,
+          [{ text: "Tamam" }]
+        );
+        // Stok bilgisini guncelle
+        fetchCampaign();
+      }
+    } catch {
+      Alert.alert("Hata", "Bir sorun olustu. Tekrar deneyin.");
+    } finally {
+      setClaiming(false);
+    }
+  }, [user, id, router, fetchCampaign]);
+
+  if (loading && !campaign) {
+    return (
+      <View style={styles.notFound}>
+        <ActivityIndicator size="large" color={Colors.accent} />
+      </View>
+    );
+  }
 
   if (!campaign) {
     return (
@@ -201,11 +268,10 @@ export default function CampaignDetailScreen() {
 
           {/* CTA Button */}
           <Button
-            title="Bu fırsatı yakala"
+            title={claiming ? "Yakalanıyor..." : "Bu fırsatı yakala"}
             variant="primary"
-            onPress={() => {
-              // TODO: Implement claim flow
-            }}
+            loading={claiming}
+            onPress={handleClaim}
             style={styles.ctaButton}
           />
         </View>
