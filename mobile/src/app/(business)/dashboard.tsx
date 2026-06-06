@@ -29,7 +29,7 @@ import { getMyBusiness } from "../../services/business";
 import { listMyCampaigns } from "../../services/campaign";
 import { categoryMeta } from "../../lib/mock-campaigns";
 import { formatPrice } from "../../lib/utils";
-import type { Business, Campaign, CampaignStatus } from "../../lib/database.types";
+import type { Business, Campaign } from "../../lib/database.types";
 import {
   Colors,
   Spacing,
@@ -66,85 +66,6 @@ function getCampaignImage(c: Campaign, index: number): string {
   if (c.image_url) return c.image_url;
   return CAMPAIGN_FALLBACK_IMAGES[index % CAMPAIGN_FALLBACK_IMAGES.length];
 }
-
-/* ── Demo data ── */
-const DEMO_BUSINESS = {
-  id: "demo",
-  name: "Caferağa Pastanesi",
-  category: "BAKERY",
-  city: "İstanbul",
-  district: "Kadıköy",
-} as Business;
-
-const now = Date.now();
-const DEMO_CAMPAIGNS: Campaign[] = [
-  {
-    id: "d1",
-    business_id: "demo",
-    slogan: "Taze Çıktı! Balkabaklı Cheesecake yarı fiyatına",
-    title: "Balkabaklı Cheesecake",
-    description: "",
-    image_url:
-      "https://images.unsplash.com/photo-1567171466295-4afa63d45416?w=800&q=80",
-    old_price: 180,
-    new_price: 99,
-    currency: "TRY",
-    starts_at: new Date(now - 60 * 60_000).toISOString(),
-    ends_at: new Date(now + 45 * 60_000).toISOString(),
-    total_stock: 20,
-    remaining_stock: 8,
-    per_user_limit: 1,
-    is_surprise_package: false,
-    surprise_hint: null,
-    status: "ACTIVE" as CampaignStatus,
-    created_at: "",
-    updated_at: "",
-  },
-  {
-    id: "d2",
-    business_id: "demo",
-    slogan: "Gün sonu sürpriz pasta paketi — ne çıkarsa bahtına!",
-    title: "Sürpriz Pasta Paketi",
-    description: "",
-    image_url:
-      "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&q=80",
-    old_price: 250,
-    new_price: 89,
-    currency: "TRY",
-    starts_at: new Date(now - 30 * 60_000).toISOString(),
-    ends_at: new Date(now + 90 * 60_000).toISOString(),
-    total_stock: 10,
-    remaining_stock: 3,
-    per_user_limit: 1,
-    is_surprise_package: true,
-    surprise_hint: null,
-    status: "ACTIVE" as CampaignStatus,
-    created_at: "",
-    updated_at: "",
-  },
-  {
-    id: "d3",
-    business_id: "demo",
-    slogan: "Kahvaltı böreği %40 indirimli — sabahın fırsatı",
-    title: "Kahvaltı Böreği",
-    description: "",
-    image_url:
-      "https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=800&q=80",
-    old_price: 120,
-    new_price: 72,
-    currency: "TRY",
-    starts_at: new Date(now - 8 * 60 * 60_000).toISOString(),
-    ends_at: new Date(now - 60 * 60_000).toISOString(),
-    total_stock: 30,
-    remaining_stock: 0,
-    per_user_limit: 1,
-    is_surprise_package: false,
-    surprise_hint: null,
-    status: "EXPIRED" as CampaignStatus,
-    created_at: "",
-    updated_at: "",
-  },
-];
 
 /* ── Greeting ── */
 function getGreeting(): string {
@@ -219,7 +140,6 @@ export default function DashboardScreen() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [isDemo, setIsDemo] = useState(false);
   const [endedIds, setEndedIds] = useState<Set<string>>(new Set());
 
   const fetchData = useCallback(async () => {
@@ -228,36 +148,16 @@ export default function DashboardScreen() {
         getMyBusiness(),
         listMyCampaigns(),
       ]);
-      if (biz) {
-        setBusiness(biz as Business);
-        setCampaigns((camps ?? []) as Campaign[]);
-        setIsDemo(false);
-      } else if (profile) {
-        // Logged-in user with no business — no demo
-        setBusiness(null);
-        setCampaigns([]);
-        setIsDemo(false);
-      } else {
-        // Guest user — show demo
-        setBusiness(DEMO_BUSINESS);
-        setCampaigns(DEMO_CAMPAIGNS);
-        setIsDemo(true);
-      }
+      setBusiness(biz ? (biz as Business) : null);
+      setCampaigns(biz ? ((camps ?? []) as Campaign[]) : []);
     } catch {
-      if (profile) {
-        setBusiness(null);
-        setCampaigns([]);
-        setIsDemo(false);
-      } else {
-        setBusiness(DEMO_BUSINESS);
-        setCampaigns(DEMO_CAMPAIGNS);
-        setIsDemo(true);
-      }
+      setBusiness(null);
+      setCampaigns([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [profile]);
+  }, []);
 
   useEffect(() => {
     fetchData();
@@ -269,7 +169,7 @@ export default function DashboardScreen() {
   }, [fetchData]);
 
   // BUSINESS rolu var ama isletme kaydi yok
-  if (profile?.role === "BUSINESS" && !business && !loading && !isDemo) {
+  if (!business && !loading) {
     return (
       <View style={s.guardContainer}>
         <Text variant="heading" style={{ marginBottom: 8, textAlign: "center" }}>
@@ -300,7 +200,7 @@ export default function DashboardScreen() {
 
   const meta =
     categoryMeta[business.category as keyof typeof categoryMeta] ?? null;
-  const ownerName = profile?.name?.split(" ")[0] ?? (isDemo ? "Hakan" : "");
+  const ownerName = profile?.name?.split(" ")[0] ?? "";
 
   const activeCampaigns = campaigns.filter(
     (c) => c.status === "ACTIVE" && !endedIds.has(c.id)
@@ -309,8 +209,8 @@ export default function DashboardScreen() {
     (c) => c.status !== "ACTIVE" || endedIds.has(c.id)
   );
 
-  const todayConversions = isDemo ? 12 : Math.floor(Math.random() * 20 + 5);
-  const weeklyViews = isDemo ? 156 : Math.floor(Math.random() * 200 + 30);
+  const todayConversions = Math.floor(Math.random() * 20 + 5);
+  const weeklyViews = Math.floor(Math.random() * 200 + 30);
 
   function handleEarlyEnd(id: string) {
     Alert.alert(
@@ -340,15 +240,6 @@ export default function DashboardScreen() {
         />
       }
     >
-      {/* Demo banner */}
-      {isDemo && (
-        <View style={s.demoBanner}>
-          <Text style={s.demoBannerText}>
-            Demo modu — örnek verilerle çalışıyorsunuz.
-          </Text>
-        </View>
-      )}
-
       {/* ═══════════ HERO ═══════════ */}
       <View style={s.heroWrap}>
         <Image
@@ -680,18 +571,6 @@ const s = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: Colors.bg,
   },
-
-  /* Demo banner */
-  demoBanner: {
-    marginHorizontal: Spacing.md,
-    marginTop: Spacing.sm,
-    backgroundColor: "rgba(245,158,11,0.1)",
-    borderWidth: 1,
-    borderColor: "rgba(245,158,11,0.25)",
-    borderRadius: BorderRadius.md,
-    padding: Spacing.sm,
-  },
-  demoBannerText: { fontSize: FontSize.xs, color: Colors.amber, textAlign: "center" },
 
   /* ── HERO ── */
   heroWrap: {

@@ -72,30 +72,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        // Profile yuklenmeden loading false olmaz
+        await fetchProfile(session.user);
+      }
       setState((prev) => ({
         ...prev,
         session,
         user: session?.user ?? null,
         loading: false,
       }));
-      if (session?.user) {
-        fetchProfile(session.user);
-      }
     });
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setState((prev) => ({
-        ...prev,
-        session,
-        user: session?.user ?? null,
-        profile: session ? prev.profile : null,
-        loading: false,
-      }));
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
-        fetchProfile(session.user);
+        setState((prev) => ({
+          ...prev,
+          session,
+          user: session.user,
+        }));
+        await fetchProfile(session.user);
+        setState((prev) => ({ ...prev, loading: false }));
+      } else {
+        // Cikis yapildi
+        setState({
+          session: null,
+          user: null,
+          profile: null,
+          loading: false,
+        });
       }
     });
 
