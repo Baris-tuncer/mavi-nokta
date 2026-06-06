@@ -20,7 +20,13 @@ import type {
   DashboardCampaign,
   DashboardStats,
 } from "@/lib/mock-dashboard";
+import type { LoyaltyCardData } from "@/lib/mock-loyalty";
+import type { ScannerData } from "@/lib/mock-scanner";
 import { QuickCampaignModal } from "./QuickCampaignModal";
+import { ProBanner } from "./ProBanner";
+import { ProModal } from "./ProModal";
+import { ScannerSection } from "./ScannerSection";
+import { LoyaltySection } from "./LoyaltySection";
 
 /* ═══════════════════════════════════════════════════════════════
    UNSPLASH IMAGES
@@ -48,13 +54,15 @@ type Props = {
   campaigns: DashboardCampaign[];
   stats: DashboardStats;
   isDemo: boolean;
+  loyaltyCard?: LoyaltyCardData;
+  scannerData?: ScannerData;
 };
 
 function getGreeting(): string {
   const h = new Date().getHours();
-  if (h < 12) return "Günaydın";
-  if (h < 18) return "İyi günler";
-  return "İyi akşamlar";
+  if (h < 12) return "Gunaydin";
+  if (h < 18) return "Iyi gunler";
+  return "Iyi aksamlar";
 }
 
 function useCountdown(endsAt: string) {
@@ -70,7 +78,7 @@ function useCountdown(endsAt: string) {
     return () => clearInterval(id);
   }, [endsAt, remaining]);
 
-  if (remaining <= 0) return "Süre doldu";
+  if (remaining <= 0) return "Sure doldu";
   const h = Math.floor(remaining / 3_600_000);
   const m = Math.floor((remaining % 3_600_000) / 60_000);
   const s = Math.floor((remaining % 60_000) / 1000);
@@ -82,9 +90,19 @@ function useCountdown(endsAt: string) {
 /* ═══════════════════════════════════════════════════════════════
    DASHBOARD
    ═══════════════════════════════════════════════════════════════ */
-export function Dashboard({ business, campaigns, stats, isDemo }: Props) {
+export function Dashboard({
+  business,
+  campaigns,
+  stats,
+  isDemo,
+  loyaltyCard,
+  scannerData,
+}: Props) {
   const [modalOpen, setModalOpen] = useState(false);
+  const [proModalOpen, setProModalOpen] = useState(false);
   const [endedIds, setEndedIds] = useState<Set<string>>(new Set());
+
+  const isPro = business.isPro ?? false;
 
   const cat = categoryMeta[business.category as MockCategory] ?? {
     label: business.category,
@@ -99,7 +117,7 @@ export function Dashboard({ business, campaigns, stats, isDemo }: Props) {
   );
 
   function handleEarlyEnd(id: string) {
-    if (!confirm("Bu kampanyayı erken bitirmek istediğinize emin misiniz?"))
+    if (!confirm("Bu kampanyayi erken bitirmek istediginize emin misiniz?"))
       return;
     setEndedIds((prev) => new Set(prev).add(id));
   }
@@ -109,7 +127,7 @@ export function Dashboard({ business, campaigns, stats, isDemo }: Props) {
       {/* Demo banner */}
       {isDemo && (
         <div className="mb-5 rounded-2xl border border-amber-200/60 bg-amber-50/80 px-4 py-3 text-sm font-medium text-amber-700 backdrop-blur-sm">
-          Demo modu — Caferağa Pastanesi&apos;nin örnek verileriyle
+          Demo modu — Caferaga Pastanesi&apos;nin ornek verileriyle
           geziniyorsunuz.
         </div>
       )}
@@ -147,30 +165,37 @@ export function Dashboard({ business, campaigns, stats, isDemo }: Props) {
         </div>
       </div>
 
+      {/* ═══════════ PRO BANNER ═══════════ */}
+      {!isPro && (
+        <div className="mt-5">
+          <ProBanner isPro={isPro} onUpgrade={() => setProModalOpen(true)} />
+        </div>
+      )}
+
       {/* ═══════════ STAT CARDS ═══════════ */}
       <div className="mt-5 grid grid-cols-3 gap-3">
         <GlassStatCard
           image={IMG.statActive}
           value={stats.activeCampaigns}
-          label="Aktif Fırsat"
+          label="Aktif Firsat"
           icon={<TrendingUp className="h-4 w-4" />}
         />
         <GlassStatCard
           image={IMG.statPeople}
           value={stats.todayConversions}
-          label="Bugün"
-          suffix=" kişi"
+          label="Bugun"
+          suffix=" kisi"
           icon={<Users className="h-4 w-4" />}
         />
         <GlassStatCard
           image={IMG.statViews}
           value={stats.weeklyViews}
-          label="Görüntüleme"
+          label="Goruntuleme"
           icon={<Eye className="h-4 w-4" />}
         />
       </div>
 
-      {/* ═══════════ CTA — Yeni Fırsat Yarat ═══════════ */}
+      {/* ═══════════ CTA — Yeni Firsat Yarat ═══════════ */}
       <button
         onClick={() => setModalOpen(true)}
         className="group relative mt-6 w-full overflow-hidden rounded-3xl text-left transition active:scale-[0.99]"
@@ -187,16 +212,23 @@ export function Dashboard({ business, campaigns, stats, isDemo }: Props) {
           </span>
           <div className="ml-4 flex-1">
             <span className="text-lg font-bold text-white">
-              Yeni Fırsat Yarat
+              Yeni Firsat Yarat
             </span>
             <br />
             <span className="text-sm text-white/65">
-              Saniyeler içinde yayına al
+              Saniyeler icinde yayina al
             </span>
           </div>
           <ChevronRight className="h-5 w-5 text-white/40" />
         </div>
       </button>
+
+      {/* ═══════════ SCANNER SECTION ═══════════ */}
+      {scannerData && (
+        <div className="mt-10">
+          <ScannerSection data={scannerData} isDemo={isDemo} />
+        </div>
+      )}
 
       {/* ═══════════ ACTIVE CAMPAIGNS ═══════════ */}
       {activeCampaigns.length > 0 && (
@@ -216,10 +248,17 @@ export function Dashboard({ business, campaigns, stats, isDemo }: Props) {
         </section>
       )}
 
+      {/* ═══════════ LOYALTY SECTION ═══════════ */}
+      {loyaltyCard && (
+        <div className="mt-10">
+          <LoyaltySection card={loyaltyCard} />
+        </div>
+      )}
+
       {/* ═══════════ PAST CAMPAIGNS ═══════════ */}
       {pastCampaigns.length > 0 && (
         <section className="mt-10">
-          <h2 className="text-lg font-bold text-slate-800">Geçmiş</h2>
+          <h2 className="text-lg font-bold text-slate-800">Gecmis</h2>
           <div className="mt-4 flex flex-col gap-3">
             {pastCampaigns.map((c) => (
               <PastCampaignCard key={c.id} campaign={c} />
@@ -240,28 +279,35 @@ export function Dashboard({ business, campaigns, stats, isDemo }: Props) {
           <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
             <div className="rounded-2xl bg-white/20 p-6 backdrop-blur-xl">
               <h3 className="text-xl font-bold text-white">
-                Henüz kampanya yok
+                Henuz kampanya yok
               </h3>
               <p className="mt-2 text-sm text-white/70">
-                İlk fırsatını oluştur, müşterin gelsin.
+                Ilk firsatini olustur, musterilerin gelsin.
               </p>
               <button
                 onClick={() => setModalOpen(true)}
                 className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-900 shadow-lg transition hover:bg-white/90"
               >
                 <Plus className="h-4 w-4" />
-                İlk kampanyayı oluştur
+                Ilk kampanyayi olustur
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ═══════════ MODAL ═══════════ */}
+      {/* ═══════════ MODALS ═══════════ */}
       {modalOpen && (
         <QuickCampaignModal
           isDemo={isDemo}
           onClose={() => setModalOpen(false)}
+        />
+      )}
+      {proModalOpen && (
+        <ProModal
+          isPro={isPro}
+          isDemo={isDemo}
+          onClose={() => setProModalOpen(false)}
         />
       )}
     </div>
@@ -344,7 +390,7 @@ function ActiveCampaignCard({
           {c.isSurprisePackage && (
             <GlassPill color="purple">
               <Gift className="h-3 w-3" />
-              Sürpriz
+              Surpriz
             </GlassPill>
           )}
           <CountdownBadge endsAt={c.endsAt} />
@@ -399,7 +445,7 @@ function ActiveCampaignCard({
         <div className="mt-3 flex items-center justify-between">
           <span className="inline-flex items-center gap-1 text-xs text-slate-400">
             <Eye className="h-3 w-3" />
-            {c.views} görüntüleme
+            {c.views} goruntuleme
           </span>
           <button
             onClick={onEarlyEnd}
@@ -438,7 +484,7 @@ function PastCampaignCard({ campaign: c }: { campaign: DashboardCampaign }) {
           </span>
           <span className="inline-flex items-center gap-1">
             <Users className="h-3 w-3" />
-            {c.conversions} dönüşüm
+            {c.conversions} donusum
           </span>
         </div>
       </div>

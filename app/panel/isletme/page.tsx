@@ -10,6 +10,8 @@ import {
   type DashboardCampaign,
   type DashboardStats,
 } from "@/lib/mock-dashboard";
+import { demoLoyaltyCard } from "@/lib/mock-loyalty";
+import { demoScannerData } from "@/lib/mock-scanner";
 
 export default async function BusinessPanelPage() {
   let business: DashboardBusiness;
@@ -33,7 +35,8 @@ export default async function BusinessPanelPage() {
           category: biz.category,
           city: biz.city,
           district: biz.district,
-          ownerName: profile.name?.split(" ")[0] ?? "İşletme Sahibi",
+          ownerName: profile.name?.split(" ")[0] ?? "Isletme Sahibi",
+          isPro: false, // TODO: DB'den cek
         };
 
         campaigns = rawCampaigns.map((c) => ({
@@ -71,12 +74,14 @@ export default async function BusinessPanelPage() {
             campaigns={campaigns}
             stats={stats}
             isDemo={false}
+            loyaltyCard={demoLoyaltyCard}
+            scannerData={demoScannerData}
           />
         );
       }
     }
   } catch {
-    // Auth veya DB hatası → demo moduna düş
+    // Auth veya DB hatasi → demo moduna dus
   }
 
   return (
@@ -85,6 +90,8 @@ export default async function BusinessPanelPage() {
       campaigns={demoCampaigns}
       stats={demoStats}
       isDemo={true}
+      loyaltyCard={demoLoyaltyCard}
+      scannerData={demoScannerData}
     />
   );
 }

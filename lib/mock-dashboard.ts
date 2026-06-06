@@ -8,6 +8,7 @@ export type DashboardBusiness = {
   city: string;
   district: string;
   ownerName: string;
+  isPro?: boolean;
 };
 
 export type DashboardCampaign = {
@@ -40,6 +41,7 @@ export const demoBusiness: DashboardBusiness = {
   city: "İstanbul",
   district: "Kadıköy",
   ownerName: "Hakan",
+  isPro: false,
 };
 
 export const demoCampaigns: DashboardCampaign[] = [
