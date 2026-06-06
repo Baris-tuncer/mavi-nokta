@@ -1,16 +1,17 @@
 import { useState } from "react";
 import {
   View,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
+  TextInput,
+  TouchableOpacity,
   StyleSheet,
+  Keyboard,
+  Pressable,
 } from "react-native";
+import { ChevronLeft } from "lucide-react-native";
 import { useRouter, Link } from "expo-router";
-import { Input } from "../../components/ui/Input";
 import { Button } from "../../components/ui/Button";
 import { Text } from "../../components/ui/Text";
-import { Colors, Spacing } from "../../lib/constants";
+import { Colors, Spacing, BorderRadius, FontSize } from "../../lib/constants";
 import { signInWithEmail } from "../../services/auth";
 import { useAuth } from "../../providers/AuthProvider";
 
@@ -48,87 +49,100 @@ export default function CustomerLoginScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <ScrollView
-        contentContainerStyle={styles.container}
-        keyboardShouldPersistTaps="handled"
+    <Pressable style={styles.container} onPress={Keyboard.dismiss}>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => router.back()}
+        activeOpacity={0.7}
       >
-        <View style={styles.header}>
-          <Text variant="title">Müşteri Girişi</Text>
-          <Text variant="caption" style={styles.subtitle}>
-            Mahallendeki anlık fırsatları yakalamaya devam et.
+        <ChevronLeft size={24} color={Colors.text} />
+      </TouchableOpacity>
+
+      <Text variant="title">Müşteri Girişi</Text>
+      <Text variant="caption" style={styles.subtitle}>
+        Mahallendeki anlık fırsatları yakalamaya devam et.
+      </Text>
+
+      <Text variant="label" style={styles.label}>E-posta</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="ornek@mail.com"
+        placeholderTextColor={Colors.textMute}
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
+      />
+
+      <Text variant="label" style={styles.label}>Şifre</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="******"
+        placeholderTextColor={Colors.textMute}
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+      />
+
+      {error ? (
+        <Text style={styles.errorText}>{error}</Text>
+      ) : null}
+
+      <Button
+        title="Giriş Yap"
+        onPress={handleSubmit}
+        loading={pending}
+        style={styles.submitButton}
+      />
+
+      <View style={styles.links}>
+        <Link href="/(auth)/customer-register" asChild>
+          <Text style={styles.linkText}>
+            Hesabın yok mu? <Text style={styles.linkBold}>Kayıt ol</Text>
           </Text>
-        </View>
+        </Link>
 
-        <View style={styles.form}>
-          <Input
-            label="E-posta"
-            placeholder="ornek@mail.com"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoComplete="email"
-          />
-
-          <Input
-            label="Şifre"
-            placeholder="******"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoComplete="password"
-          />
-
-          {error ? (
-            <Text style={styles.errorText}>{error}</Text>
-          ) : null}
-
-          <Button
-            title="Giriş Yap"
-            onPress={handleSubmit}
-            loading={pending}
-            style={styles.submitButton}
-          />
-        </View>
-
-        <View style={styles.links}>
-          <Link href="/(auth)/customer-register" asChild>
-            <Text style={styles.linkText}>
-              Hesabın yok mu? <Text style={styles.linkBold}>Kayıt ol</Text>
-            </Text>
-          </Link>
-
-          <Link href="/(auth)/business-login" asChild>
-            <Text style={styles.linkTextSecondary}>İşletme misin?</Text>
-          </Link>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        <Link href="/(auth)/business-login" asChild>
+          <Text style={styles.linkTextSecondary}>İşletme misin?</Text>
+        </Link>
+      </View>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: {
+  container: {
     flex: 1,
+    padding: Spacing.lg,
+    paddingTop: 60,
     backgroundColor: Colors.bg,
   },
-  container: {
-    flexGrow: 1,
-    padding: Spacing.lg,
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.surface,
+    alignItems: "center",
     justifyContent: "center",
-  },
-  header: {
     marginBottom: Spacing.xl,
   },
   subtitle: {
     marginTop: Spacing.sm,
+    marginBottom: Spacing.xl,
   },
-  form: {
-    marginBottom: Spacing.lg,
+  label: {
+    marginBottom: Spacing.xs,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.surface,
+    fontSize: FontSize.base,
+    color: Colors.text,
+    paddingVertical: 14,
+    paddingHorizontal: Spacing.md,
+    marginBottom: Spacing.md,
   },
   errorText: {
     color: Colors.action,
@@ -141,6 +155,7 @@ const styles = StyleSheet.create({
   links: {
     alignItems: "center",
     gap: Spacing.md,
+    marginTop: Spacing.xl,
   },
   linkText: {
     color: Colors.textSoft,

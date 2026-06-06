@@ -1,17 +1,19 @@
 import { useState } from "react";
 import {
   View,
+  TextInput,
   ScrollView,
-  KeyboardAvoidingView,
-  Platform,
+  TouchableOpacity,
   StyleSheet,
   Alert,
+  Keyboard,
+  Pressable,
 } from "react-native";
 import { useRouter, Link } from "expo-router";
-import { Input } from "../../components/ui/Input";
+import { ChevronLeft } from "lucide-react-native";
 import { Button } from "../../components/ui/Button";
 import { Text } from "../../components/ui/Text";
-import { Colors, Spacing } from "../../lib/constants";
+import { Colors, Spacing, BorderRadius, FontSize } from "../../lib/constants";
 import { signUpCustomer } from "../../services/auth";
 import { updateProfileExtras, ensureCustomerRow } from "../../services/profile";
 import { useAuth } from "../../providers/AuthProvider";
@@ -29,6 +31,7 @@ export default function CustomerRegisterScreen() {
   const [pending, setPending] = useState(false);
 
   async function handleSubmit() {
+    Keyboard.dismiss();
     setError("");
 
     if (!name.trim()) {
@@ -57,7 +60,6 @@ export default function CustomerRegisterScreen() {
         return;
       }
 
-      // If no session, email confirmation is required
       if (!data.session) {
         Alert.alert(
           "E-posta Onayı",
@@ -72,7 +74,6 @@ export default function CustomerRegisterScreen() {
         return;
       }
 
-      // Session exists — set up profile extras and customer row
       await updateProfileExtras(
         phone.trim() || undefined,
         city.trim() || undefined
@@ -88,79 +89,91 @@ export default function CustomerRegisterScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
+    <Pressable style={styles.flex} onPress={Keyboard.dismiss}>
       <ScrollView
         contentContainerStyle={styles.container}
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps="always"
+        showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <Text variant="title">Kayıt Ol</Text>
-          <Text variant="caption" style={styles.subtitle}>
-            30 saniye sürer. Kart yok, abonelik yok.
-          </Text>
-        </View>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+          activeOpacity={0.7}
+        >
+          <ChevronLeft size={24} color={Colors.text} />
+        </TouchableOpacity>
 
-        <View style={styles.form}>
-          <Input
-            label="Ad Soyad"
-            placeholder="Ahmet Yılmaz"
-            value={name}
-            onChangeText={setName}
-            autoCapitalize="words"
-            autoComplete="name"
-          />
+        <Text variant="title">Kayıt Ol</Text>
+        <Text variant="caption" style={styles.subtitle}>
+          30 saniye sürer. Kart yok, abonelik yok.
+        </Text>
 
-          <Input
-            label="E-posta"
-            placeholder="ornek@mail.com"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoComplete="email"
-          />
+        <Text variant="label" style={styles.label}>Ad Soyad</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Ahmet Yılmaz"
+          placeholderTextColor={Colors.textMute}
+          value={name}
+          onChangeText={setName}
+          autoCapitalize="words"
+          returnKeyType="next"
+        />
 
-          <Input
-            label="Şifre"
-            placeholder="******"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoComplete="new-password"
-            hint="6+ karakter"
-          />
+        <Text variant="label" style={styles.label}>E-posta</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="ornek@mail.com"
+          placeholderTextColor={Colors.textMute}
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          returnKeyType="next"
+        />
 
-          <Input
-            label="Telefon"
-            placeholder="05XX XXX XX XX"
-            value={phone}
-            onChangeText={setPhone}
-            keyboardType="phone-pad"
-            autoComplete="tel"
-          />
+        <Text variant="label" style={styles.label}>Şifre</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="******"
+          placeholderTextColor={Colors.textMute}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          returnKeyType="next"
+        />
+        <Text variant="muted" style={styles.hint}>6+ karakter</Text>
 
-          <Input
-            label="Şehir"
-            placeholder="İstanbul"
-            value={city}
-            onChangeText={setCity}
-            autoCapitalize="words"
-          />
+        <Text variant="label" style={styles.label}>Telefon</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="05XX XXX XX XX"
+          placeholderTextColor={Colors.textMute}
+          value={phone}
+          onChangeText={setPhone}
+          keyboardType="phone-pad"
+        />
 
-          {error ? (
-            <Text style={styles.errorText}>{error}</Text>
-          ) : null}
+        <Text variant="label" style={styles.label}>Şehir</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="İstanbul"
+          placeholderTextColor={Colors.textMute}
+          value={city}
+          onChangeText={setCity}
+          autoCapitalize="words"
+          returnKeyType="done"
+        />
 
-          <Button
-            title="Kayıt Ol"
-            onPress={handleSubmit}
-            loading={pending}
-            style={styles.submitButton}
-          />
-        </View>
+        {error ? (
+          <Text style={styles.errorText}>{error}</Text>
+        ) : null}
+
+        <Button
+          title="Kayıt Ol"
+          onPress={handleSubmit}
+          loading={pending}
+          style={styles.submitButton}
+        />
 
         <View style={styles.links}>
           <Link href="/(auth)/customer-login" asChild>
@@ -171,7 +184,7 @@ export default function CustomerRegisterScreen() {
           </Link>
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </Pressable>
   );
 }
 
@@ -183,16 +196,39 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: Spacing.lg,
+    paddingTop: 60,
+    paddingBottom: Spacing.xxl,
   },
-  header: {
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.surface,
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: Spacing.xl,
-    marginTop: Spacing.lg,
   },
   subtitle: {
     marginTop: Spacing.sm,
+    marginBottom: Spacing.xl,
   },
-  form: {
-    marginBottom: Spacing.lg,
+  label: {
+    marginBottom: Spacing.xs,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.surface,
+    fontSize: FontSize.base,
+    color: Colors.text,
+    paddingVertical: 14,
+    paddingHorizontal: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  hint: {
+    marginTop: -Spacing.sm,
+    marginBottom: Spacing.md,
   },
   errorText: {
     color: Colors.action,
@@ -205,6 +241,7 @@ const styles = StyleSheet.create({
   links: {
     alignItems: "center",
     gap: Spacing.md,
+    marginTop: Spacing.xl,
     paddingBottom: Spacing.xl,
   },
   linkText: {

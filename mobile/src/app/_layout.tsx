@@ -27,7 +27,7 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" />
           <Stack.Screen
             name="(auth)"
-            options={{ presentation: "modal" }}
+            options={{ animation: "slide_from_bottom" }}
           />
           <Stack.Screen name="(business)" />
           <Stack.Screen

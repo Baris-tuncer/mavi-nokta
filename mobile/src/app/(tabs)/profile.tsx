@@ -115,7 +115,17 @@ export default function ProfileScreen() {
             >
               <Text style={styles.registerText}>
                 Hesabın yok mu?{" "}
-                <Text style={styles.registerTextBold}>Kayıt Ol</Text>
+                <Text style={styles.registerTextBold}>Müşteri Kayıt</Text>
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => router.push("/(auth)/business-register")}
+              style={styles.registerLink}
+            >
+              <Text style={styles.registerText}>
+                İşletme sahibi misin?{" "}
+                <Text style={styles.registerTextBold}>İşletme Kayıt</Text>
               </Text>
             </TouchableOpacity>
 

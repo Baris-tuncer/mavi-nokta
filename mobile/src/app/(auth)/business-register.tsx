@@ -1,17 +1,19 @@
 import { useState } from "react";
 import {
   View,
+  TextInput,
   ScrollView,
-  KeyboardAvoidingView,
-  Platform,
+  TouchableOpacity,
   StyleSheet,
+  Keyboard,
+  Pressable,
 } from "react-native";
 import { useRouter, Link } from "expo-router";
-import { Input } from "../../components/ui/Input";
+import { ChevronLeft } from "lucide-react-native";
 import { Button } from "../../components/ui/Button";
 import { Text } from "../../components/ui/Text";
 import { Select } from "../../components/ui/Select";
-import { Colors, Spacing } from "../../lib/constants";
+import { Colors, Spacing, BorderRadius, FontSize } from "../../lib/constants";
 import { signUpBusiness } from "../../services/auth";
 import { createBusiness } from "../../services/business";
 import { cities } from "../../lib/mock-campaigns";
@@ -45,12 +47,9 @@ export default function BusinessRegisterScreen() {
   const router = useRouter();
   const { refreshProfile } = useAuth();
 
-  // Account fields
   const [ownerName, setOwnerName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  // Business fields
   const [businessName, setBusinessName] = useState("");
   const [category, setCategory] = useState("");
   const [cityKey, setCityKey] = useState("");
@@ -58,11 +57,9 @@ export default function BusinessRegisterScreen() {
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
   const [customCategory, setCustomCategory] = useState("");
-
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
 
-  // Compute district options based on selected city
   const selectedCity = cities.find((c) => c.key === cityKey);
   const districtOptions = selectedCity
     ? selectedCity.districts
@@ -76,65 +73,31 @@ export default function BusinessRegisterScreen() {
   }
 
   async function handleSubmit() {
+    Keyboard.dismiss();
     setError("");
 
-    if (!ownerName.trim()) {
-      setError("İşletme sahibi adı gerekli.");
-      return;
-    }
-    if (!email.trim()) {
-      setError("E-posta gerekli.");
-      return;
-    }
-    if (!password || password.length < 6) {
-      setError("Şifre en az 6 karakter olmalı.");
-      return;
-    }
-    if (!businessName.trim()) {
-      setError("İşletme adı gerekli.");
-      return;
-    }
-    if (!category) {
-      setError("Kategori seçiniz.");
-      return;
-    }
-    if (category === "OTHER" && !customCategory.trim()) {
-      setError("Lütfen kategori adını yazınız.");
-      return;
-    }
-    if (!cityKey) {
-      setError("Şehir seçiniz.");
-      return;
-    }
-    if (!district) {
-      setError("İlçe seçiniz.");
-      return;
-    }
-    if (!address.trim()) {
-      setError("Adres gerekli.");
-      return;
-    }
+    if (!ownerName.trim()) { setError("İşletme sahibi adı gerekli."); return; }
+    if (!email.trim()) { setError("E-posta gerekli."); return; }
+    if (!password || password.length < 6) { setError("Şifre en az 6 karakter olmalı."); return; }
+    if (!businessName.trim()) { setError("İşletme adı gerekli."); return; }
+    if (!category) { setError("Kategori seçiniz."); return; }
+    if (category === "OTHER" && !customCategory.trim()) { setError("Lütfen kategori adını yazınız."); return; }
+    if (!cityKey) { setError("Şehir seçiniz."); return; }
+    if (!district) { setError("İlçe seçiniz."); return; }
+    if (!address.trim()) { setError("Adres gerekli."); return; }
 
     setPending(true);
     try {
       const { error: authError } = await signUpBusiness(
-        email,
-        password,
-        ownerName.trim()
+        email, password, ownerName.trim()
       );
-
-      if (authError) {
-        setError(authError.message);
-        return;
-      }
+      if (authError) { setError(authError.message); return; }
 
       const cityLabel = selectedCity?.label ?? cityKey;
-
       await createBusiness({
         businessName: businessName.trim(),
         category: category as BusinessCategory,
-        customCategory:
-          category === "OTHER" ? customCategory.trim() : undefined,
+        customCategory: category === "OTHER" ? customCategory.trim() : undefined,
         cityKey,
         cityLabel,
         district,
@@ -152,131 +115,150 @@ export default function BusinessRegisterScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
+    <Pressable style={styles.flex} onPress={Keyboard.dismiss}>
       <ScrollView
         contentContainerStyle={styles.container}
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps="always"
+        showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <Text variant="title">İşletme Kayıt</Text>
-          <Text variant="caption" style={styles.subtitle}>
-            İşletmeni kaydet, kampanyalarını paylaş.
-          </Text>
-        </View>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+          activeOpacity={0.7}
+        >
+          <ChevronLeft size={24} color={Colors.text} />
+        </TouchableOpacity>
+
+        <Text variant="title">İşletme Kayıt</Text>
+        <Text variant="caption" style={styles.subtitle}>
+          İşletmeni kaydet, kampanyalarını paylaş.
+        </Text>
 
         {/* Account fields */}
-        <View style={styles.form}>
-          <Input
-            label="İşletme Sahibi Adı"
-            placeholder="Ahmet Yılmaz"
-            value={ownerName}
-            onChangeText={setOwnerName}
-            autoCapitalize="words"
-            autoComplete="name"
-          />
+        <Text variant="label" style={styles.label}>İşletme Sahibi Adı</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Ahmet Yılmaz"
+          placeholderTextColor={Colors.textMute}
+          value={ownerName}
+          onChangeText={setOwnerName}
+          autoCapitalize="words"
+          returnKeyType="next"
+        />
 
-          <Input
-            label="E-posta"
-            placeholder="ornek@mail.com"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoComplete="email"
-          />
+        <Text variant="label" style={styles.label}>E-posta</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="ornek@mail.com"
+          placeholderTextColor={Colors.textMute}
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          returnKeyType="next"
+        />
 
-          <Input
-            label="Şifre"
-            placeholder="******"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoComplete="new-password"
-            hint="6+ karakter"
-          />
+        <Text variant="label" style={styles.label}>Şifre</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="******"
+          placeholderTextColor={Colors.textMute}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          returnKeyType="next"
+        />
+        <Text variant="muted" style={styles.hint}>6+ karakter</Text>
 
-          {/* Separator */}
-          <View style={styles.separator}>
-            <View style={styles.separatorLine} />
-            <Text variant="muted" style={styles.separatorText}>
-              İşletme Bilgileri
-            </Text>
-            <View style={styles.separatorLine} />
-          </View>
+        {/* Separator */}
+        <View style={styles.separator}>
+          <View style={styles.separatorLine} />
+          <Text variant="muted" style={styles.separatorText}>
+            İşletme Bilgileri
+          </Text>
+          <View style={styles.separatorLine} />
+        </View>
 
-          <Input
-            label="İşletme Adı"
-            placeholder="Kahve Ustası"
-            value={businessName}
-            onChangeText={setBusinessName}
-            autoCapitalize="words"
-          />
+        <Text variant="label" style={styles.label}>İşletme Adı</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Kahve Ustası"
+          placeholderTextColor={Colors.textMute}
+          value={businessName}
+          onChangeText={setBusinessName}
+          autoCapitalize="words"
+          returnKeyType="next"
+        />
 
-          <Select
-            label="Kategori"
-            options={CATEGORY_OPTIONS}
-            value={category}
-            onChange={setCategory}
-            placeholder="Kategori seçiniz..."
-          />
+        <Select
+          label="Kategori"
+          options={CATEGORY_OPTIONS}
+          value={category}
+          onChange={setCategory}
+          placeholder="Kategori seçiniz..."
+        />
 
-          {category === "OTHER" && (
-            <Input
-              label="Kategori Adı"
+        {category === "OTHER" && (
+          <>
+            <Text variant="label" style={styles.label}>Kategori Adı</Text>
+            <TextInput
+              style={styles.input}
               placeholder="Örn: Kuruyemişçi, Dondurma, Börekçi..."
+              placeholderTextColor={Colors.textMute}
               value={customCategory}
               onChangeText={setCustomCategory}
               autoCapitalize="words"
             />
-          )}
+          </>
+        )}
 
-          <Select
-            label="Şehir"
-            options={cityOptions}
-            value={cityKey}
-            onChange={handleCityChange}
-            placeholder="Şehir seçiniz..."
-          />
+        <Select
+          label="Şehir"
+          options={cityOptions}
+          value={cityKey}
+          onChange={handleCityChange}
+          placeholder="Şehir seçiniz..."
+        />
 
-          <Select
-            label="İlçe"
-            options={districtOptions}
-            value={district}
-            onChange={setDistrict}
-            placeholder={cityKey ? "İlçe seçiniz..." : "Önce şehir seçiniz"}
-          />
+        <Select
+          label="İlçe"
+          options={districtOptions}
+          value={district}
+          onChange={setDistrict}
+          placeholder={cityKey ? "İlçe seçiniz..." : "Önce şehir seçiniz"}
+        />
 
-          <Input
-            label="Adres"
-            placeholder="Sinanpaşa Mh., Beşiktaş"
-            value={address}
-            onChangeText={setAddress}
-            autoCapitalize="sentences"
-          />
+        <Text variant="label" style={styles.label}>Adres</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Sinanpaşa Mh., Beşiktaş"
+          placeholderTextColor={Colors.textMute}
+          value={address}
+          onChangeText={setAddress}
+          autoCapitalize="sentences"
+          returnKeyType="next"
+        />
 
-          <Input
-            label="Telefon"
-            placeholder="05XX XXX XX XX"
-            value={phone}
-            onChangeText={setPhone}
-            keyboardType="phone-pad"
-            autoComplete="tel"
-          />
+        <Text variant="label" style={styles.label}>Telefon</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="05XX XXX XX XX"
+          placeholderTextColor={Colors.textMute}
+          value={phone}
+          onChangeText={setPhone}
+          keyboardType="phone-pad"
+        />
 
-          {error ? (
-            <Text style={styles.errorText}>{error}</Text>
-          ) : null}
+        {error ? (
+          <Text style={styles.errorText}>{error}</Text>
+        ) : null}
 
-          <Button
-            title="İşletme Oluştur"
-            onPress={handleSubmit}
-            loading={pending}
-            style={styles.submitButton}
-          />
-        </View>
+        <Button
+          title="İşletme Oluştur"
+          onPress={handleSubmit}
+          loading={pending}
+          style={styles.submitButton}
+        />
 
         <View style={styles.links}>
           <Link href="/(auth)/business-login" asChild>
@@ -287,7 +269,7 @@ export default function BusinessRegisterScreen() {
           </Link>
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </Pressable>
   );
 }
 
@@ -299,16 +281,39 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: Spacing.lg,
+    paddingTop: 60,
+    paddingBottom: Spacing.xxl,
   },
-  header: {
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.surface,
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: Spacing.xl,
-    marginTop: Spacing.lg,
   },
   subtitle: {
     marginTop: Spacing.sm,
+    marginBottom: Spacing.xl,
   },
-  form: {
-    marginBottom: Spacing.lg,
+  label: {
+    marginBottom: Spacing.xs,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.surface,
+    fontSize: FontSize.base,
+    color: Colors.text,
+    paddingVertical: 14,
+    paddingHorizontal: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  hint: {
+    marginTop: -Spacing.sm,
+    marginBottom: Spacing.md,
   },
   separator: {
     flexDirection: "row",
@@ -334,6 +339,7 @@ const styles = StyleSheet.create({
   links: {
     alignItems: "center",
     gap: Spacing.md,
+    marginTop: Spacing.xl,
     paddingBottom: Spacing.xl,
   },
   linkText: {
