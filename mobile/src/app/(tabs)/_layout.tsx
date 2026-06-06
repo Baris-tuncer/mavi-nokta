@@ -1,8 +1,16 @@
-import { Tabs } from "expo-router";
+import { Tabs, Redirect } from "expo-router";
 import { Flame, Radar, Map, Gift, User } from "lucide-react-native";
+import { useAuth } from "../../providers/AuthProvider";
 import { Colors } from "../../lib/constants";
 
 export default function TabLayout() {
+  const { profile, loading } = useAuth();
+
+  // BUSINESS kullanicisini isletme paneline yonlendir
+  if (!loading && profile?.role === "BUSINESS") {
+    return <Redirect href="/(business)/dashboard" />;
+  }
+
   return (
     <Tabs
       screenOptions={{

@@ -9,7 +9,7 @@ import {
   RefreshControl,
   Dimensions,
 } from "react-native";
-import { useRouter, Link } from "expo-router";
+import { useRouter } from "expo-router";
 import { Image } from "expo-image";
 import {
   Plus,
@@ -267,26 +267,6 @@ export default function DashboardScreen() {
     setRefreshing(true);
     fetchData();
   }, [fetchData]);
-
-  if (profile && profile.role !== "BUSINESS" && !loading) {
-    return (
-      <View style={s.guardContainer}>
-        <Text variant="heading" style={{ marginBottom: 8, textAlign: "center" }}>
-          Erisim Engellendi
-        </Text>
-        <Text variant="caption" style={{ textAlign: "center", marginBottom: 24 }}>
-          Bu sayfa sadece isletme hesaplarina aciktir.{"\n"}
-          Musteri hesabiyla isletme paneline erisilemez.
-        </Text>
-        <TouchableOpacity
-          style={s.guardLink}
-          onPress={() => router.back()}
-        >
-          <Text style={s.guardLinkText}>Geri Don</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
 
   // BUSINESS rolu var ama isletme kaydi yok
   if (profile?.role === "BUSINESS" && !business && !loading && !isDemo) {

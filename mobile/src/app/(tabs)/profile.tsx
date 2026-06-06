@@ -156,18 +156,6 @@ export default function ProfileScreen() {
               </Text>
             </TouchableOpacity>
 
-            <View style={styles.demoDivider}>
-              <View style={styles.demoDividerLine} />
-              <Text style={styles.demoDividerText}>veya</Text>
-              <View style={styles.demoDividerLine} />
-            </View>
-
-            <Button
-              title="Demo İşletme Paneli"
-              variant="ghost"
-              onPress={() => router.push("/(business)/dashboard")}
-              style={styles.guestButton}
-            />
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -286,15 +274,6 @@ export default function ProfileScreen() {
         )}
 
         <View style={styles.actions}>
-          {profile?.role === "BUSINESS" && (
-            <Button
-              title="İşletme Paneli"
-              variant="secondary"
-              onPress={() => router.push("/(business)/dashboard")}
-              style={styles.actionButton}
-            />
-          )}
-
           <Button
             title="Çıkış Yap"
             variant="danger"
@@ -373,24 +352,6 @@ const styles = StyleSheet.create({
     color: Colors.accentLight,
     fontWeight: "700",
   },
-  demoDivider: {
-    flexDirection: "row",
-    alignItems: "center",
-    width: "100%",
-    marginTop: Spacing.lg,
-    marginBottom: Spacing.sm,
-    gap: Spacing.sm,
-  },
-  demoDividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: Colors.border,
-  },
-  demoDividerText: {
-    fontSize: FontSize.xs,
-    color: Colors.textMute,
-  },
-
   profileHeader: {
     alignItems: "center",
     paddingVertical: Spacing.xl,

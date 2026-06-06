@@ -1,26 +1,57 @@
-import { Stack } from "expo-router";
+import { Tabs } from "expo-router";
+import { LayoutDashboard, User, Plus } from "lucide-react-native";
 import { Colors } from "../../lib/constants";
 
-export default function BusinessLayout() {
+export default function BusinessTabLayout() {
   return (
-    <Stack
+    <Tabs
       screenOptions={{
-        headerStyle: { backgroundColor: Colors.bg },
-        headerTintColor: Colors.text,
-        headerTitleStyle: { fontWeight: "600" },
-        headerShadowVisible: false,
-        contentStyle: { backgroundColor: Colors.bg },
-        animation: "slide_from_right",
+        headerShown: false,
+        tabBarActiveTintColor: Colors.accent,
+        tabBarInactiveTintColor: Colors.textMute,
+        tabBarStyle: {
+          backgroundColor: Colors.white,
+          borderTopColor: Colors.border,
+          borderTopWidth: 0,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.04,
+          shadowRadius: 8,
+          elevation: 8,
+          paddingBottom: 4,
+          paddingTop: 8,
+          height: 60,
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: "600",
+        },
       }}
     >
-      <Stack.Screen
+      <Tabs.Screen
         name="dashboard"
-        options={{ title: "İşletme Paneli" }}
+        options={{
+          title: "Panel",
+          tabBarIcon: ({ color, size }) => (
+            <LayoutDashboard size={size} color={color} />
+          ),
+        }}
       />
-      <Stack.Screen
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profil",
+          tabBarIcon: ({ color, size }) => (
+            <User size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="new-campaign"
-        options={{ title: "Yeni Kampanya" }}
+        options={{
+          href: null,
+        }}
       />
-    </Stack>
+    </Tabs>
   );
 }
