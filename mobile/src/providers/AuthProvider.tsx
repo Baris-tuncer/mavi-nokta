@@ -38,11 +38,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .single();
 
     if (data) {
+      const name =
+        data.full_name ||
+        user.user_metadata?.full_name ||
+        user.email ||
+        "Kullanici";
+
+      // Sync full_name from auth metadata to profiles table if missing
+      if (!data.full_name && user.user_metadata?.full_name) {
+        supabase
+          .from("profiles")
+          .update({ full_name: user.user_metadata.full_name })
+          .eq("id", user.id)
+          .then();
+      }
+
       setState((prev) => ({
         ...prev,
         profile: {
           id: data.id,
-          name: data.full_name || user.email || "Kullanici",
+          name,
           email: user.email || "",
           role: data.role as UserRole,
         },

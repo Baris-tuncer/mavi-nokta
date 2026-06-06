@@ -3,14 +3,17 @@ import {
   View,
   ScrollView,
   TouchableOpacity,
+  TextInput,
   Alert,
   ActivityIndicator,
+  Keyboard,
   StyleSheet,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../providers/AuthProvider";
 import { signOut } from "../../services/auth";
+import { updateProfileExtras } from "../../services/profile";
 import { getMyClaims, type MyClaim } from "../../services/claim";
 import { Text } from "../../components/ui/Text";
 import { Button } from "../../components/ui/Button";
@@ -26,10 +29,13 @@ const STATUS_LABELS: Record<string, { label: string; variant: "accent" | "eco" |
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, refreshProfile } = useAuth();
   const [signingOut, setSigningOut] = useState(false);
   const [claims, setClaims] = useState<MyClaim[]>([]);
   const [claimsLoading, setClaimsLoading] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState("");
+  const [savingName, setSavingName] = useState(false);
 
   const fetchClaims = useCallback(async () => {
     if (!user) return;
@@ -66,6 +72,27 @@ export default function ProfileScreen() {
         },
       },
     ]);
+  };
+
+  const handleEditName = () => {
+    setNameInput(profile?.name || "");
+    setEditingName(true);
+  };
+
+  const handleSaveName = async () => {
+    const trimmed = nameInput.trim();
+    if (!trimmed) return;
+    Keyboard.dismiss();
+    setSavingName(true);
+    try {
+      await updateProfileExtras(trimmed);
+      await refreshProfile();
+      setEditingName(false);
+    } catch {
+      Alert.alert("Hata", "Isim kaydedilemedi.");
+    } finally {
+      setSavingName(false);
+    }
   };
 
   if (loading) {
@@ -163,9 +190,45 @@ export default function ProfileScreen() {
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>{initials}</Text>
           </View>
-          <Text variant="heading" style={styles.profileName}>
-            {profile?.name || "Kullanıcı"}
-          </Text>
+
+          {editingName ? (
+            <View style={styles.editNameRow}>
+              <TextInput
+                style={styles.editNameInput}
+                value={nameInput}
+                onChangeText={setNameInput}
+                autoFocus
+                autoCapitalize="words"
+                returnKeyType="done"
+                onSubmitEditing={handleSaveName}
+                placeholder="Ad Soyad"
+                placeholderTextColor={Colors.textMute}
+              />
+              <TouchableOpacity
+                style={styles.editNameSave}
+                onPress={handleSaveName}
+                disabled={savingName}
+              >
+                <Text style={styles.editNameSaveText}>
+                  {savingName ? "..." : "Kaydet"}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.editNameCancel}
+                onPress={() => setEditingName(false)}
+              >
+                <Text style={styles.editNameCancelText}>Iptal</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity onPress={handleEditName} activeOpacity={0.7}>
+              <Text variant="heading" style={styles.profileName}>
+                {profile?.name || "Kullanici"}
+              </Text>
+              <Text style={styles.editHint}>Duzenlemek icin dokun</Text>
+            </TouchableOpacity>
+          )}
+
           <Text variant="caption" style={styles.profileEmail}>
             {profile?.email || user.email}
           </Text>
@@ -348,7 +411,49 @@ const styles = StyleSheet.create({
     color: Colors.white,
   },
   profileName: {
+    marginBottom: 2,
+  },
+  editHint: {
+    fontSize: FontSize.xs,
+    color: Colors.textMute,
+    textAlign: "center",
     marginBottom: Spacing.xs,
+  },
+  editNameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.xs,
+    marginBottom: Spacing.sm,
+  },
+  editNameInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: Colors.accent,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.surface,
+    fontSize: FontSize.base,
+    color: Colors.text,
+    paddingVertical: 10,
+    paddingHorizontal: Spacing.md,
+  },
+  editNameSave: {
+    backgroundColor: Colors.accent,
+    borderRadius: BorderRadius.md,
+    paddingVertical: 10,
+    paddingHorizontal: Spacing.md,
+  },
+  editNameSaveText: {
+    color: Colors.white,
+    fontWeight: "600",
+    fontSize: FontSize.sm,
+  },
+  editNameCancel: {
+    paddingVertical: 10,
+    paddingHorizontal: Spacing.sm,
+  },
+  editNameCancelText: {
+    color: Colors.textMute,
+    fontSize: FontSize.sm,
   },
   profileEmail: {
     marginBottom: Spacing.sm,

@@ -232,18 +232,19 @@ export default function DashboardScreen() {
         setBusiness(biz as Business);
         setCampaigns((camps ?? []) as Campaign[]);
         setIsDemo(false);
-      } else if (profile?.role === "BUSINESS") {
-        // Isletme hesabi var ama isletme kaydi yok
+      } else if (profile) {
+        // Logged-in user with no business — no demo
         setBusiness(null);
         setCampaigns([]);
         setIsDemo(false);
       } else {
+        // Guest user — show demo
         setBusiness(DEMO_BUSINESS);
         setCampaigns(DEMO_CAMPAIGNS);
         setIsDemo(true);
       }
     } catch {
-      if (profile?.role === "BUSINESS") {
+      if (profile) {
         setBusiness(null);
         setCampaigns([]);
         setIsDemo(false);
@@ -256,7 +257,7 @@ export default function DashboardScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [profile?.role]);
+  }, [profile]);
 
   useEffect(() => {
     fetchData();
@@ -267,20 +268,22 @@ export default function DashboardScreen() {
     fetchData();
   }, [fetchData]);
 
-  if (profile?.role !== "BUSINESS" && !isDemo && !loading) {
+  if (profile && profile.role !== "BUSINESS" && !loading) {
     return (
       <View style={s.guardContainer}>
         <Text variant="heading" style={{ marginBottom: 8, textAlign: "center" }}>
           Erisim Engellendi
         </Text>
         <Text variant="caption" style={{ textAlign: "center", marginBottom: 24 }}>
-          Bu sayfa sadece isletme hesaplarina aciktir.
+          Bu sayfa sadece isletme hesaplarina aciktir.{"\n"}
+          Musteri hesabiyla isletme paneline erisilemez.
         </Text>
-        <Link href="/(auth)/business-login" asChild>
-          <TouchableOpacity style={s.guardLink}>
-            <Text style={s.guardLinkText}>Isletme Girisi</Text>
-          </TouchableOpacity>
-        </Link>
+        <TouchableOpacity
+          style={s.guardLink}
+          onPress={() => router.back()}
+        >
+          <Text style={s.guardLinkText}>Geri Don</Text>
+        </TouchableOpacity>
       </View>
     );
   }
