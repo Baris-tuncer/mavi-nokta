@@ -43,20 +43,32 @@ export async function createBusiness(input: CreateBusinessInput) {
     is_active: true,
   };
 
-  // Retry once on schema cache error
-  let { data, error } = await supabase
-    .from("businesses")
-    .insert(row)
-    .select()
-    .single();
+  // Retry up to 3 times on schema cache error
+  const delays = [1500, 3000, 5000];
+  let data: any = null;
+  let error: any = null;
 
-  if (error?.message?.includes("schema cache")) {
-    await new Promise((r) => setTimeout(r, 1000));
+  for (let attempt = 0; attempt <= delays.length; attempt++) {
     ({ data, error } = await supabase
       .from("businesses")
       .insert(row)
       .select()
       .single());
+
+    if (!error) break;
+
+    // Duplicate key = business already exists (previous attempt succeeded)
+    if (error.code === "23505") {
+      const existing = await getMyBusiness();
+      if (existing) return { ok: true as const, slug: existing.slug };
+    }
+
+    if (error.message?.includes("schema cache") && attempt < delays.length) {
+      await new Promise((r) => setTimeout(r, delays[attempt]));
+      continue;
+    }
+
+    break;
   }
 
   if (error) throw error;

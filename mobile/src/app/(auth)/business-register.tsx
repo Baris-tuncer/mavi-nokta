@@ -14,8 +14,8 @@ import { Button } from "../../components/ui/Button";
 import { Text } from "../../components/ui/Text";
 import { Select } from "../../components/ui/Select";
 import { Colors, Spacing, BorderRadius, FontSize, Shadow } from "../../lib/constants";
-import { signUpBusiness } from "../../services/auth";
-import { createBusiness } from "../../services/business";
+import { signUpBusiness, signInWithEmail } from "../../services/auth";
+import { createBusiness, getMyBusiness } from "../../services/business";
 import { cities } from "../../lib/mock-campaigns";
 import { useAuth } from "../../providers/AuthProvider";
 import type { BusinessCategory } from "../../lib/database.types";
@@ -87,12 +87,46 @@ export default function BusinessRegisterScreen() {
     if (!address.trim()) { setError("Adres gerekli."); return; }
 
     setPending(true);
+    setError("");
     try {
-      const { error: authError } = await signUpBusiness(
+      // 1. Auth hesabi olustur veya mevcut hesaba giris yap
+      const { data, error: authError } = await signUpBusiness(
         email, password, ownerName.trim()
       );
-      if (authError) { setError(authError.message); return; }
 
+      if (authError) {
+        // Hesap zaten varsa giris yapmaya calis
+        if (
+          authError.message.includes("already registered") ||
+          authError.message.includes("already been registered")
+        ) {
+          const { error: loginError } = await signInWithEmail(email, password);
+          if (loginError) {
+            Alert.alert("Hata", "Bu e-posta ile hesap zaten var. Giris yapilamadi: " + loginError.message);
+            return;
+          }
+        } else {
+          Alert.alert("Kayit Hatasi", authError.message);
+          return;
+        }
+      } else if (!data.session) {
+        Alert.alert(
+          "E-posta Onayi",
+          "Kayit basarili! Lutfen e-postani kontrol edip hesabini onayla.",
+          [{ text: "Tamam", onPress: () => router.replace("/(auth)/business-login") }]
+        );
+        return;
+      }
+
+      // 2. Isletme zaten olusturulmus mu kontrol et
+      const existingBiz = await getMyBusiness();
+      if (existingBiz) {
+        await refreshProfile();
+        router.replace("/(business)/dashboard");
+        return;
+      }
+
+      // 3. Isletme olustur
       const cityLabel = selectedCity?.label ?? cityKey;
       await createBusiness({
         businessName: businessName.trim(),
@@ -108,7 +142,7 @@ export default function BusinessRegisterScreen() {
       await refreshProfile();
       router.replace("/(business)/dashboard");
     } catch (e: any) {
-      setError(e.message ?? "Bir hata olustu.");
+      Alert.alert("Hata", e.message ?? "Bir hata olustu.");
     } finally {
       setPending(false);
     }
