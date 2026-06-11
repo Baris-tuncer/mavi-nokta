@@ -48,6 +48,12 @@
         {
           "locationWhenInUsePermission": "Yakınındaki fırsatları göstermek için konumuna ihtiyacımız var."
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "QR kodunu taramak için kamerana ihtiyacımız var."
+        }
       ]
     ]
   }

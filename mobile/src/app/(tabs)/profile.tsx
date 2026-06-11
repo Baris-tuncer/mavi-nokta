@@ -15,9 +15,20 @@ import { useAuth } from "../../providers/AuthProvider";
 import { signOut } from "../../services/auth";
 import { updateProfileExtras } from "../../services/profile";
 import { getMyClaims, type MyClaim } from "../../services/claim";
+import {
+  getMyReservations,
+  cancelReservation,
+  type MyReservation,
+} from "../../services/reservation";
+import {
+  getMyLoyaltyCards,
+  type MyLoyaltyCard,
+} from "../../services/loyalty";
 import { Text } from "../../components/ui/Text";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
+import { LoyaltyCard } from "../../components/LoyaltyCard";
+import { LoyaltyQRModal } from "../../components/LoyaltyQRCode";
 import { Colors, Spacing, BorderRadius, FontSize, Shadow } from "../../lib/constants";
 
 const STATUS_LABELS: Record<string, { label: string; variant: "accent" | "eco" | "neutral" | "action" | "amber" }> = {
@@ -27,12 +38,30 @@ const STATUS_LABELS: Record<string, { label: string; variant: "accent" | "eco" |
   CANCELLED: { label: "Iptal", variant: "amber" },
 };
 
+const REZ_STATUS: Record<string, { label: string; variant: "accent" | "eco" | "neutral" | "action" | "amber" }> = {
+  PENDING: { label: "Bekliyor", variant: "amber" },
+  CONFIRMED: { label: "Onaylandi", variant: "eco" },
+  REJECTED: { label: "Reddedildi", variant: "action" },
+  CANCELLED: { label: "Iptal", variant: "neutral" },
+  COMPLETED: { label: "Tamamlandi", variant: "accent" },
+};
+
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, profile, loading, refreshProfile } = useAuth();
   const [signingOut, setSigningOut] = useState(false);
   const [claims, setClaims] = useState<MyClaim[]>([]);
   const [claimsLoading, setClaimsLoading] = useState(false);
+  const [reservations, setReservations] = useState<MyReservation[]>([]);
+  const [rezLoading, setRezLoading] = useState(false);
+  const [loyaltyCards, setLoyaltyCards] = useState<MyLoyaltyCard[]>([]);
+  const [loyaltyLoading, setLoyaltyLoading] = useState(false);
+  const [qrModal, setQrModal] = useState<{
+    visible: boolean;
+    customerId: string;
+    programId: string;
+    businessName: string;
+  }>({ visible: false, customerId: "", programId: "", businessName: "" });
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState("");
   const [savingName, setSavingName] = useState(false);
@@ -50,9 +79,55 @@ export default function ProfileScreen() {
     }
   }, [user]);
 
+  const fetchReservations = useCallback(async () => {
+    if (!user) return;
+    setRezLoading(true);
+    try {
+      const data = await getMyReservations();
+      setReservations(data);
+    } catch {
+      // ignore
+    } finally {
+      setRezLoading(false);
+    }
+  }, [user]);
+
+  const fetchLoyaltyCards = useCallback(async () => {
+    if (!user) return;
+    setLoyaltyLoading(true);
+    try {
+      const data = await getMyLoyaltyCards();
+      setLoyaltyCards(data);
+    } catch {
+      // ignore
+    } finally {
+      setLoyaltyLoading(false);
+    }
+  }, [user]);
+
   useEffect(() => {
     fetchClaims();
-  }, [fetchClaims]);
+    fetchReservations();
+    fetchLoyaltyCards();
+  }, [fetchClaims, fetchReservations, fetchLoyaltyCards]);
+
+  const handleCancelRez = async (id: string) => {
+    Alert.alert("Iptal Et", "Rezervasyonu iptal etmek istediginize emin misiniz?", [
+      { text: "Vazgec", style: "cancel" },
+      {
+        text: "Iptal Et",
+        style: "destructive",
+        onPress: async () => {
+          const result = await cancelReservation(id);
+          if ("error" in result) {
+            Alert.alert("Hata", result.error);
+          } else {
+            fetchReservations();
+          }
+        },
+      },
+    ]);
+  };
 
   const handleSignOut = async () => {
     Alert.alert("Çıkış Yap", "Hesabınızdan çıkmak istediğinize emin misiniz?", [
@@ -273,6 +348,125 @@ export default function ProfileScreen() {
           </View>
         )}
 
+        {/* Rezervasyonlarim */}
+        {profile?.role !== "BUSINESS" && (
+          <View style={styles.claimsSection}>
+            <Text style={styles.claimsSectionTitle}>Rezervasyonlarim</Text>
+            {rezLoading ? (
+              <ActivityIndicator
+                size="small"
+                color={Colors.accent}
+                style={{ marginVertical: Spacing.md }}
+              />
+            ) : reservations.length === 0 ? (
+              <View style={styles.claimsEmpty}>
+                <Text style={styles.claimsEmptyText}>
+                  Henuz rezervasyonun yok
+                </Text>
+              </View>
+            ) : (
+              reservations.map((rez) => {
+                const st = REZ_STATUS[rez.status] ?? {
+                  label: rez.status,
+                  variant: "neutral" as const,
+                };
+                const canCancel =
+                  rez.status === "PENDING" || rez.status === "CONFIRMED";
+                return (
+                  <View key={rez.id} style={styles.claimCard}>
+                    <View style={styles.claimCardHeader}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.claimTitle}>
+                          {rez.business.name}
+                        </Text>
+                        <Text style={styles.claimBusiness}>
+                          {rez.reservationDate} - {rez.reservationTime.slice(0, 5)} · {rez.partySize} kisi
+                        </Text>
+                      </View>
+                      <Badge label={st.label} variant={st.variant} />
+                    </View>
+                    {rez.rejectReason && (
+                      <Text style={{ fontSize: 12, color: Colors.action, marginTop: 4 }}>
+                        Sebep: {rez.rejectReason}
+                      </Text>
+                    )}
+                    {canCancel && (
+                      <TouchableOpacity
+                        style={styles.rezCancelBtn}
+                        onPress={() => handleCancelRez(rez.id)}
+                      >
+                        <Text style={styles.rezCancelText}>Iptal Et</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                );
+              })
+            )}
+          </View>
+        )}
+
+        {/* Sadakat Kartlarim */}
+        {profile?.role !== "BUSINESS" && (
+          <View style={styles.claimsSection}>
+            <Text style={styles.claimsSectionTitle}>Sadakat Kartlarim</Text>
+            {loyaltyLoading ? (
+              <ActivityIndicator
+                size="small"
+                color={Colors.accent}
+                style={{ marginVertical: Spacing.md }}
+              />
+            ) : loyaltyCards.length === 0 ? (
+              <View style={styles.claimsEmpty}>
+                <Text style={styles.claimsEmptyText}>
+                  Henuz sadakat kartin yok
+                </Text>
+              </View>
+            ) : (
+              loyaltyCards.map((card) => (
+                <TouchableOpacity
+                  key={card.id}
+                  activeOpacity={0.8}
+                  onPress={() =>
+                    setQrModal({
+                      visible: true,
+                      customerId: user!.id,
+                      programId: card.programId,
+                      businessName: card.business.name,
+                    })
+                  }
+                  style={{ marginBottom: Spacing.sm }}
+                >
+                  <LoyaltyCard
+                    businessName={card.business.name}
+                    stampCount={card.stampCount}
+                    stampTarget={card.stampTarget}
+                    rewardText={card.rewardText}
+                    isRewardClaimed={card.isRewardClaimed}
+                  />
+                  <Text
+                    style={{
+                      fontSize: 11,
+                      color: Colors.textMute,
+                      textAlign: "center",
+                      marginTop: 4,
+                    }}
+                  >
+                    QR kod icin dokun
+                  </Text>
+                </TouchableOpacity>
+              ))
+            )}
+          </View>
+        )}
+
+        <LoyaltyQRModal
+          visible={qrModal.visible}
+          onClose={() => setQrModal((p) => ({ ...p, visible: false }))}
+          customerId={qrModal.customerId}
+          programId={qrModal.programId}
+          businessName={qrModal.businessName}
+        />
+
         <View style={styles.actions}>
           <Button
             title="Çıkış Yap"
@@ -477,6 +671,19 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
   },
 
+  rezCancelBtn: {
+    marginTop: Spacing.sm,
+    paddingVertical: 8,
+    paddingHorizontal: Spacing.md,
+    backgroundColor: Colors.surface2,
+    borderRadius: BorderRadius.md,
+    alignSelf: "flex-start",
+  },
+  rezCancelText: {
+    fontSize: FontSize.xs,
+    fontWeight: "600",
+    color: Colors.action,
+  },
   actions: {
     marginTop: Spacing.xl,
     gap: Spacing.sm,

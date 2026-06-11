@@ -12,6 +12,7 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Image } from "expo-image";
 import { ChevronLeft, Info } from "lucide-react-native";
+import { ShareButton } from "../../components/ShareButton";
 import { Text } from "../../components/ui/Text";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
@@ -159,6 +160,19 @@ export default function CampaignDetailScreen() {
           >
             <ChevronLeft size={24} color={Colors.text} />
           </TouchableOpacity>
+
+          {/* Share Button */}
+          <View style={styles.shareOverlay}>
+            <ShareButton
+              campaign={{
+                id: campaign.id,
+                title: campaign.title,
+                slogan: campaign.slogan,
+                newPrice: campaign.newPrice,
+                businessName: campaign.business.name,
+              }}
+            />
+          </View>
 
           {/* Concept image info icon — frosted glass circle */}
           <TouchableOpacity
@@ -327,6 +341,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     ...Shadow.sm,
+  },
+  shareOverlay: {
+    position: "absolute",
+    top: 56,
+    right: Spacing.md,
   },
 
   /* ── Concept image info icon ── */

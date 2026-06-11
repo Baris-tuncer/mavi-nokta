@@ -4,6 +4,7 @@ import { Image } from "expo-image";
 import { Text } from "./ui/Text";
 import { Badge } from "./ui/Badge";
 import { CountdownTimer } from "./CountdownTimer";
+import { ShareButton } from "./ShareButton";
 import { categoryMeta, type MockCampaign } from "../lib/mock-campaigns";
 import { formatPrice } from "../lib/utils";
 import {
@@ -84,13 +85,25 @@ export function VibrantCampaignCard({ campaign, onPress }: Props) {
         {campaign.slogan}
       </Text>
 
-      {/* Row 3: Price */}
+      {/* Row 3: Price + Share */}
       <View style={styles.priceRow}>
         <Text style={styles.oldPrice}>{formatPrice(campaign.oldPrice)}</Text>
         <Text style={styles.newPrice}>{formatPrice(campaign.newPrice)}</Text>
         <View style={styles.discountBadge}>
           <Text style={styles.discountText}>%{discount}</Text>
         </View>
+        <View style={{ flex: 1 }} />
+        <ShareButton
+          campaign={{
+            id: campaign.id,
+            title: campaign.title,
+            slogan: campaign.slogan,
+            newPrice: campaign.newPrice,
+            businessName: business.name,
+          }}
+          size={16}
+          style="inline"
+        />
       </View>
 
       {/* Row 4: Stock bar */}

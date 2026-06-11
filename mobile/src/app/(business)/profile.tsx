@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   ScrollView,
@@ -6,6 +6,7 @@ import {
   TextInput,
   Alert,
   Keyboard,
+  Switch,
   StyleSheet,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -13,9 +14,13 @@ import { useRouter } from "expo-router";
 import { useAuth } from "../../providers/AuthProvider";
 import { signOut } from "../../services/auth";
 import { updateProfileExtras } from "../../services/profile";
+import { getMyBusiness } from "../../services/business";
+import { updateReservationSettings } from "../../services/reservation";
 import { Text } from "../../components/ui/Text";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
+import { Select } from "../../components/ui/Select";
+import type { ReservationMode } from "../../lib/database.types";
 import { Colors, Spacing, BorderRadius, FontSize, Shadow } from "../../lib/constants";
 
 export default function BusinessProfileScreen() {
@@ -25,6 +30,22 @@ export default function BusinessProfileScreen() {
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState("");
   const [savingName, setSavingName] = useState(false);
+
+  // Reservation settings
+  const [rezEnabled, setRezEnabled] = useState(false);
+  const [rezMode, setRezMode] = useState<ReservationMode>("MANUAL");
+  const [maxParty, setMaxParty] = useState("10");
+  const [savingRez, setSavingRez] = useState(false);
+
+  useEffect(() => {
+    getMyBusiness().then((biz) => {
+      if (biz) {
+        setRezEnabled(biz.reservation_enabled ?? false);
+        setRezMode((biz.reservation_mode as ReservationMode) ?? "MANUAL");
+        setMaxParty(String(biz.max_party_size ?? 10));
+      }
+    });
+  }, []);
 
   const handleSignOut = async () => {
     Alert.alert("Cikis Yap", "Hesabinizdan cikmak istediginize emin misiniz?", [
@@ -126,6 +147,72 @@ export default function BusinessProfileScreen() {
           <Badge label="Isletme" variant="amber" />
         </View>
 
+        {/* Reservation Settings */}
+        <View style={styles.settingsSection}>
+          <Text style={styles.settingsTitle}>Rezervasyon Ayarlari</Text>
+
+          <View style={styles.settingRow}>
+            <Text style={styles.settingLabel}>Rezervasyon Kabul Et</Text>
+            <Switch
+              value={rezEnabled}
+              onValueChange={setRezEnabled}
+              trackColor={{ true: Colors.accent }}
+            />
+          </View>
+
+          {rezEnabled && (
+            <>
+              <Select
+                label="Onay Modu"
+                options={[
+                  { label: "Otomatik Onay", value: "AUTO" },
+                  { label: "Manuel Onay", value: "MANUAL" },
+                ]}
+                value={rezMode}
+                onChange={(v) => setRezMode(v as ReservationMode)}
+              />
+
+              <View style={styles.fieldGroup}>
+                <Text style={styles.settingLabel}>Maks. Kisi Sayisi</Text>
+                <TextInput
+                  style={styles.settingInput}
+                  value={maxParty}
+                  onChangeText={setMaxParty}
+                  keyboardType="number-pad"
+                  returnKeyType="done"
+                />
+              </View>
+            </>
+          )}
+
+          <Button
+            title="Ayarlari Kaydet"
+            variant="outline"
+            loading={savingRez}
+            onPress={async () => {
+              Keyboard.dismiss();
+              setSavingRez(true);
+              try {
+                const result = await updateReservationSettings({
+                  reservationEnabled: rezEnabled,
+                  reservationMode: rezMode,
+                  maxPartySize: Math.max(1, Number(maxParty) || 10),
+                });
+                if ("error" in result) {
+                  Alert.alert("Hata", result.error);
+                } else {
+                  Alert.alert("Basarili", "Ayarlar kaydedildi.");
+                }
+              } catch {
+                Alert.alert("Hata", "Ayarlar kaydedilemedi.");
+              } finally {
+                setSavingRez(false);
+              }
+            }}
+            style={{ marginTop: Spacing.sm }}
+          />
+        </View>
+
         <View style={styles.actions}>
           <Button
             title="Cikis Yap"
@@ -218,6 +305,47 @@ const styles = StyleSheet.create({
   },
   profileEmail: {
     marginBottom: Spacing.sm,
+  },
+  settingsSection: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    padding: Spacing.md,
+    marginTop: Spacing.lg,
+  },
+  settingsTitle: {
+    fontSize: FontSize.sm,
+    fontWeight: "700",
+    color: Colors.accent,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+    marginBottom: Spacing.md,
+  },
+  settingRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: Spacing.md,
+  },
+  settingLabel: {
+    fontSize: FontSize.sm,
+    fontWeight: "600",
+    color: Colors.textSoft,
+    marginBottom: 6,
+  },
+  fieldGroup: {
+    marginBottom: Spacing.md,
+  },
+  settingInput: {
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.bg,
+    fontSize: FontSize.base,
+    color: Colors.text,
+    paddingVertical: 12,
+    paddingHorizontal: Spacing.md,
   },
   actions: {
     marginTop: Spacing.xl,

@@ -34,6 +34,8 @@ export default function RootLayout() {
             name="campaign/[id]"
             options={{ presentation: "modal" }}
           />
+          <Stack.Screen name="business/[id]" />
+          <Stack.Screen name="reserve/[businessId]" />
         </Stack>
       </AuthProvider>
     </GestureHandlerRootView>

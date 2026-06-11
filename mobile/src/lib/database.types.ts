@@ -35,6 +35,15 @@ export type CampaignStatus =
 
 export type ClaimStatus = "RESERVED" | "REDEEMED" | "EXPIRED" | "CANCELLED";
 
+export type ReservationStatus =
+  | "PENDING"
+  | "CONFIRMED"
+  | "REJECTED"
+  | "CANCELLED"
+  | "COMPLETED";
+
+export type ReservationMode = "AUTO" | "MANUAL";
+
 export type Profile = {
   id: string;
   role: UserRole;
@@ -72,6 +81,9 @@ export type Business = {
   longitude: number;
   is_verified: boolean;
   is_active: boolean;
+  reservation_enabled: boolean;
+  reservation_mode: ReservationMode;
+  max_party_size: number;
   created_at: string;
   updated_at: string;
 };
@@ -112,6 +124,47 @@ export type Claim = {
   price_charged: number;
 };
 
+export type Reservation = {
+  id: string;
+  business_id: string;
+  customer_id: string;
+  reservation_date: string;
+  reservation_time: string;
+  party_size: number;
+  status: ReservationStatus;
+  note: string | null;
+  reject_reason: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type LoyaltyProgram = {
+  id: string;
+  business_id: string;
+  stamp_target: number;
+  reward_text: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type LoyaltyCard = {
+  id: string;
+  program_id: string;
+  customer_id: string;
+  stamp_count: number;
+  is_reward_claimed: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type LoyaltyStamp = {
+  id: string;
+  card_id: string;
+  stamped_at: string;
+  stamped_by: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -120,12 +173,18 @@ export type Database = {
       businesses: { Row: Business; Insert: Partial<Business>; Update: Partial<Business> };
       campaigns: { Row: Campaign; Insert: Partial<Campaign>; Update: Partial<Campaign> };
       claims: { Row: Claim; Insert: Partial<Claim>; Update: Partial<Claim> };
+      reservations: { Row: Reservation; Insert: Partial<Reservation>; Update: Partial<Reservation> };
+      loyalty_programs: { Row: LoyaltyProgram; Insert: Partial<LoyaltyProgram>; Update: Partial<LoyaltyProgram> };
+      loyalty_cards: { Row: LoyaltyCard; Insert: Partial<LoyaltyCard>; Update: Partial<LoyaltyCard> };
+      loyalty_stamps: { Row: LoyaltyStamp; Insert: Partial<LoyaltyStamp>; Update: Partial<LoyaltyStamp> };
     };
     Enums: {
       user_role: UserRole;
       business_category: BusinessCategory;
       campaign_status: CampaignStatus;
       claim_status: ClaimStatus;
+      reservation_status: ReservationStatus;
+      reservation_mode: ReservationMode;
     };
   };
 };

@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { LayoutDashboard, User, Plus } from "lucide-react-native";
+import { LayoutDashboard, User, Plus, CalendarDays, Award } from "lucide-react-native";
 import { Colors } from "../../lib/constants";
 
 export default function BusinessTabLayout() {
@@ -34,6 +34,24 @@ export default function BusinessTabLayout() {
           title: "Panel",
           tabBarIcon: ({ color, size }) => (
             <LayoutDashboard size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="reservations"
+        options={{
+          title: "Rez",
+          tabBarIcon: ({ color, size }) => (
+            <CalendarDays size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="loyalty"
+        options={{
+          title: "Sadakat",
+          tabBarIcon: ({ color, size }) => (
+            <Award size={size} color={color} />
           ),
         }}
       />
